@@ -1,4 +1,4 @@
-" ft_improved.vim - Better f/t command for Vim
+" ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.1
 " Maintainer:  Christian Brabandt <cb@256bit.org>
@@ -15,50 +15,57 @@
 "
 " Functions:
 let s:cpo= &cpo
-if exists("g:loaded_ft_improved") || &cp
-  finish
-endif
 set cpo&vim
 
-fun! ft_improved#FTComand(f, fwd) "{{{1
+fun! ftimproved#FTCommand(f, fwd) "{{{1
+	let cnt  = v:count1
 	let char = nr2char(getchar())
-	let cmd  = (a:fwd ? '/' : '?'). \V'
-	let offset = (a:fwd ? '/' : '?')
+	if  char == ""
+		" abort when Escape has been hit
+		return char
+	endif
+	let cmd  = (a:fwd ? '/' : '?') . '\V'
+	let off  = (a:fwd ? '/e-' : '?e+')
+	let res  = ''
 	if a:f
-		return v:count1.cmd.escape(char, '\')
+		" Searching using 'f' command
+		let res = cmd.escape(char, '\')
 	else
-		let count = 1
-		while v:count1 >= count
-			let tline = search('\V'.escape(char, '\'), 'nW)
+		" Searching using 't' command
+		let counter = 1
+		while v:count1 >= counter
+			let tline = search('\V'.escape(char, '\'), 'nW')
+			let counter += 1
 		endw
 		if tline != line('.') && matchstr(getline(tline), '^'.char)
-			return v:count1.cmd.'$'
+			let res = cmd.'$'
 		else
-			return v:count1.cmd.escape(char, '\').offset.'e-1'
+			let res = cmd.escape(char, '\').off
 		endif
 	endif
+	return res."\n"
 endfun
 
-fun! ft_improved#Activate(enable) "{{{1
+fun! ftimproved#Activate(enable) "{{{1
 	if a:enable
 		if !hasmapto('<Plug>F_Cmd_forward')
-			nnoremap <silent> <expr> <unique> f <Plug>F_Cmd_forward
-			onoremap <silent> <expr> <unique> f <Plug>F_Cmd_forward
+			nnoremap <silent> <expr> <unique> f ftimproved#FTCommand(1,1)
+			onoremap <silent> <expr> <unique> f ftimproved#FTCommand(1,1)
 		endif
 
 		if !hasmapto('<Plug>F_Cmd_backward')
-			nnoremap <silent> <expr> <unique> F <Plug>F_Cmd_backward
-			onoremap <silent> <expr> <unique> F <Plug>F_Cmd_backward
+			nnoremap <silent> <expr> <unique> F ftimproved#FTCommand(1,0)
+			onoremap <silent> <expr> <unique> F ftimproved#FTCommand(1,0)
 		endif
 
 		if !hasmapto('<Plug>T_Cmd_forward')
-			nnoremap <silent> <expr> <unique> t <Plug>T_Cmd_forward
-			onoremap <silent> <expr> <unique> t <Plug>T_Cmd_forward
+			nnoremap <silent> <expr> <unique> t ftimproved#FTCommand(0,1)
+			onoremap <silent> <expr> <unique> t ftimproved#FTCommand(0,1)
 		endif
 
 		if !hasmapto('<Plug>T_Cmd_backward')
-			nnoremap <silent> <expr> <unique> T <Plug>T_Cmd_backward
-			onoremap <silent> <expr> <unique> T <Plug>T_Cmd_backward
+			nnoremap <silent> <expr> <unique> T ftimproved#FTCommand(0,0)
+			onoremap <silent> <expr> <unique> T ftimproved#FTCommand(0,0)
 		endif
 	else
 		if hasmapto('<Plug>F_Cmd_forward')
