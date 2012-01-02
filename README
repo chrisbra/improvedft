@@ -1,0 +1,79 @@
+ft_improved Better f/t command for Vim
+
+Author:  Christian Brabandt <cb@256bit.org>
+Version: 0.1 Mon, 02 Jan 2012 21:33:50 +0100
+
+Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
+           The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
+           (see |copyright|) except use improved_ft instead of "Vim".
+           NO WARRANTY, EXPRESS OR IMPLIED.  USE AT-YOUR-OWN-RISK.
+
+
+==============================================================================
+1. Contents                                                  *improvedft-ft*
+
+        1.  Contents...................................: |improvedft-ft|
+        2.  Manual.....................................: |improvedft-manual|
+        2.1   Enable...................................: |improvedft-Enable|
+        2.2   Disable..................................: |improvedft-Disable|
+        3.  Feedback...................................: |improvedft-feedback|
+        4.  History....................................: |improvedft-history|
+
+==============================================================================
+2. Improved ft command Manual                              *improvedft-manual*
+
+Functionality
+
+This plugin tries to improve the existing behaviour of the |f|, |F|, |t| and
+|T| command by letting them move the cursor not only inside the current line,
+but move to whatever line, where the character is found.
+
+It does consider counts given and should work simply as a user would be
+expecting.
+
+It basically does that, by remapping the f,F,t and T command to issue a search
+for the character that is entered and moving the cursor there.
+
+
+2.1 Enable                                               *improvedft-Enable*
+----------
+
+By default the new f,F,t,T commands should simply work. If you have disabled
+the plugin (see |improvedft-Disable|), use the command >
+    :EnableImprovedFT
+<
+
+2.2 Disable                                             *improvedft-Disable*
+-----------
+
+If for any reason, you want to disable the plugin, use >
+    :DisableImprovedFT
+<
+
+==============================================================================
+3. Feedback                                         *improvedft-feedback*
+
+Feedback is always welcome. If you like the plugin, please rate it at the
+vim-page:
+http://www.vim.org/scripts/script.php?script_id=3075
+
+You can also follow the development of the plugin at github:
+http://github.com/chrisbra/improvedft
+
+Please don't hesitate to report any bugs to the maintainer, mentioned in the
+third line of this document.
+
+==============================================================================
+4. History                                              *improvedft-history*
+
+0.1: Jan 02, 2012 {{{1
+
+- Initial upload
+- development versions are available at the github repository
+- put plugin on a public repository (http://github.com/chrisbra/improvedft)
+
+  }}}
+
+==============================================================================
+Modeline:
+vim:tw=78:ts=8:ft=help:et:fdm=marker:fdl=0:norl
