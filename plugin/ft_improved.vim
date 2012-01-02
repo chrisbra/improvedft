@@ -24,18 +24,20 @@ let g:loaded_ft_improved = 1
 " ----------------------------------------------------------------------------
 " Define the Mapping: "{{{2
 
-noremap <script> <Plug>F_Cmd_forward  <sid>F_Cmd_fw
-noremap <script> <Plug>F_Cmd_backward <sid>F_Cmd_bw
-noremap <script> <Plug>T_Cmd_forward  <sid>T_Cmd_fw
-noremap <script> <Plug>T_Cmd_backward <sid>T_Cmd_bw
+"noremap <script> <Plug>F_Cmd_forward  <sid>F_Cmd_fw
+"noremap <script> <Plug>F_Cmd_backward <sid>F_Cmd_bw
+"noremap <script> <Plug>T_Cmd_forward  <sid>T_Cmd_fw
+"noremap <script> <Plug>T_Cmd_backward <sid>T_Cmd_bw
+"
+"noremap <sid>F_Cmd_fw ft_improved#FTCommand(1,1)
+"noremap <sid>F_Cmd_bw ft_improved#FTCommand(1,0)
+"noremap <sid>T_Cmd_fw ft_improved#FTCommand(0,1)
+"noremap <sid>T_Cmd_bw ft_improved#FTCommand(0,0)
 
-noremap <sid>F_Cmd_fw ft_improved#FTCommand(1,1)
-noremap <sid>F_Cmd_bw ft_improved#FTCommand(1,0)
-noremap <sid>T_Cmd_fw ft_improved#FTCommand(0,1)
-noremap <sid>T_Cmd_bw ft_improved#FTCommand(0,0)
+com! DisableImprovedFT :call ftimproved#Activate(0)
+com! EnableImprovedFT  :call ftimproved#Activate(1)
 
-com! DisableImprovedFT :call ft_improved#Activate(0)
-com! EnableImprovedFT :call ft_improved#Activate(1)
+call ftimproved#Activate(1)
 
 " Restore: "{{{1
 let &cpo=s:cpo
