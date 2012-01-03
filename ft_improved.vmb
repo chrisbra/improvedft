@@ -49,7 +49,7 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-79
+83
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.1
@@ -95,32 +95,36 @@ fun! ftimproved#FTCommand(f, fwd) "{{{1
 			let res = cmd.escape(char, '\').off
 		endif
 	endif
-	return res."\n"
+	return res."\n" ":call histdel('/', -1)\n"
+endfun
+
+fun! <sid>Map(lhs, rhs) "{{{1
+	if !hasmapto(a:rhs, 'nvo')
+		exe "nnoremap <silent> <expr> <unique>" a:lhs a:rhs
+		exe "onoremap <silent> <expr> <unique>" a:lhs a:rhs
+		exe "vnoremap <silent> <expr> <unique>" a:lhs a:rhs
+	endif
+endfun
+
+fun! <sid>Unmap(lhs) "{{{1
+	if hasmapto('ftimproved#FTCommand', 'nov')
+		exe "nunmap" a:lhs
+		exe "vunmap" a:lhs
+		exe "ounmap" a:lhs
+	endif
 endfun
 
 fun! ftimproved#Activate(enable) "{{{1
 	if a:enable
-		if !hasmapto('ftimproved#FTCommand', 'no')
-			nnoremap <silent> <expr> <unique> f ftimproved#FTCommand(1,1)
-			onoremap <silent> <expr> <unique> f ftimproved#FTCommand(1,1)
-			nnoremap <silent> <expr> <unique> F ftimproved#FTCommand(1,0)
-			onoremap <silent> <expr> <unique> F ftimproved#FTCommand(1,0)
-			nnoremap <silent> <expr> <unique> t ftimproved#FTCommand(0,1)
-			onoremap <silent> <expr> <unique> t ftimproved#FTCommand(0,1)
-			nnoremap <silent> <expr> <unique> T ftimproved#FTCommand(0,0)
-			onoremap <silent> <expr> <unique> T ftimproved#FTCommand(0,0)
-		endif
+		call <sid>Map('f', 'ftimproved#FTCommand(1,1)')
+		call <sid>Map('F', 'ftimproved#FTCommand(1,0)')
+		call <sid>Map('t', 'ftimproved#FTCommand(0,1)')
+		call <sid>Map('T', 'ftimproved#FTCommand(0,1)')
 	else
-		if hasmapto('ftimproved#FTCommand', 'no')
-			nunmap f
-			ounmap f
-			nunmap F
-			ounmap F
-			nunmap t
-			ounmap t
-			nunmap T
-			ounmap T
-		endif
+		call <sid>Unmap('f')
+		call <sid>Unmap('F')
+		call <sid>Unmap('t')
+		call <sid>Unmap('T')
 	endif
 endfun
 
