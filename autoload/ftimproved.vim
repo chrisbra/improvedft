@@ -17,40 +17,53 @@
 let s:cpo= &cpo
 set cpo&vim
 
-fun! ftimproved#FTCommand(f, fwd) "{{{1
+fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 	let cnt  = v:count1
 	let char = nr2char(getchar())
 	if  char == ""
 		" abort when Escape has been hit
 		return char
 	endif
-	let cmd  = (a:fwd ? '/' : '?') . '\V'
-	let off  = (a:fwd ? '/e-' : '?e+')
+	let char='\V'.escape(char, '\')
+	let cmd  = (a:fwd ? '/' : '?')
+	let off  = cmd
 	let res  = ''
 	if a:f
 		" Searching using 'f' command
-		let res = cmd.escape(char, '\')
+		if a:mode == 'o'
+			let off .= (a:fwd ? 'e' : 's')
+		endif
+		let res = cmd.char.off."\n"
 	else
 		" Searching using 't' command
+		if a:mode =~? 'o\|v\|'
+			"let off  .= (a:fwd ? 's' : 'e') . 
+			"	\ (a:mode == 'v' ? '-' : '')
+			let off  .= (a:fwd ? 's-' : 'e+')
+		else
+			let off  .= (a:fwd ? 'e-' : 'e+')
+		endif
 		let counter = 1
-		while v:count1 >= counter
-			let tline = search('\V'.escape(char, '\'), 'nW')
+		let oldpos = getpos('.')
+		while cnt >= counter
+			let tline = search(char, (a:fwd ? '' : 'b') .'W')
 			let counter += 1
 		endw
-		if tline != line('.') && matchstr(getline(tline), '^'.char)
-			let res = cmd.'$'
+		if tline != oldpos[1] && match(getline(tline), '^'.char) == 0
+			let res = cmd.char.off."\n"
 		else
-			let res = cmd.escape(char, '\').off
+			let res = cmd.char.off."\n"
 		endif
 	endif
-	return res."\n" ":call histdel('/', -1)\n"
+	return res ":call histdel('/', -1)\n"
 endfun
 
 fun! <sid>Map(lhs, rhs) "{{{1
 	if !hasmapto(a:rhs, 'nvo')
-		exe "nnoremap <silent> <expr> <unique>" a:lhs a:rhs
-		exe "onoremap <silent> <expr> <unique>" a:lhs a:rhs
-		exe "vnoremap <silent> <expr> <unique>" a:lhs a:rhs
+		for mode in split('nvo', '\zs')
+			exe mode. "noremap <silent> <expr> <unique>" a:lhs
+					\ substitute(a:rhs, 'X', '"'.mode.'"', '')
+		endfor
 	endif
 endfun
 
@@ -64,10 +77,10 @@ endfun
 
 fun! ftimproved#Activate(enable) "{{{1
 	if a:enable
-		call <sid>Map('f', 'ftimproved#FTCommand(1,1)')
-		call <sid>Map('F', 'ftimproved#FTCommand(1,0)')
-		call <sid>Map('t', 'ftimproved#FTCommand(0,1)')
-		call <sid>Map('T', 'ftimproved#FTCommand(0,1)')
+		call <sid>Map('f', 'ftimproved#FTCommand(1,1,X)')
+		call <sid>Map('F', 'ftimproved#FTCommand(1,0,X)')
+		call <sid>Map('t', 'ftimproved#FTCommand(0,1,X)')
+		call <sid>Map('T', 'ftimproved#FTCommand(0,0,X)')
 	else
 		call <sid>Unmap('f')
 		call <sid>Unmap('F')
