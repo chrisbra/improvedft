@@ -48,42 +48,24 @@ endfun
 
 fun! ftimproved#Activate(enable) "{{{1
 	if a:enable
-		if !hasmapto('<Plug>F_Cmd_forward')
+		if !hasmapto('ftimproved#FTCommand', 'no')
 			nnoremap <silent> <expr> <unique> f ftimproved#FTCommand(1,1)
 			onoremap <silent> <expr> <unique> f ftimproved#FTCommand(1,1)
-		endif
-
-		if !hasmapto('<Plug>F_Cmd_backward')
 			nnoremap <silent> <expr> <unique> F ftimproved#FTCommand(1,0)
 			onoremap <silent> <expr> <unique> F ftimproved#FTCommand(1,0)
-		endif
-
-		if !hasmapto('<Plug>T_Cmd_forward')
 			nnoremap <silent> <expr> <unique> t ftimproved#FTCommand(0,1)
 			onoremap <silent> <expr> <unique> t ftimproved#FTCommand(0,1)
-		endif
-
-		if !hasmapto('<Plug>T_Cmd_backward')
 			nnoremap <silent> <expr> <unique> T ftimproved#FTCommand(0,0)
 			onoremap <silent> <expr> <unique> T ftimproved#FTCommand(0,0)
 		endif
 	else
-		if hasmapto('<Plug>F_Cmd_forward')
+		if hasmapto('ftimproved#FTCommand', 'no')
 			nunmap f
 			ounmap f
-		endif
-
-		if hasmapto('<Plug>F_Cmd_backward')
 			nunmap F
 			ounmap F
-		endif
-
-		if hasmapto('<Plug>T_Cmd_forward')
 			nunmap t
 			ounmap t
-		endif
-
-		if hasmapto('<Plug>T_Cmd_backward')
 			nunmap T
 			ounmap T
 		endif
