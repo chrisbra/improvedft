@@ -16,6 +16,7 @@ Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
         2.  Manual.....................................: |improvedft-manual|
         2.1   Enable...................................: |improvedft-Enable|
         2.2   Disable..................................: |improvedft-Disable|
+        2.3   Bugs.....................................: |improvedft-Bugs|
         3.  Feedback...................................: |improvedft-feedback|
         4.  History....................................: |improvedft-history|
 
@@ -49,6 +50,15 @@ the plugin (see |improvedft-Disable|), use the command >
 If for any reason, you want to disable the plugin, use >
     :DisableImprovedFT
 <
+
+2.3 Bugs                                             *improvedft-Bugs*
+--------
+
+- The |;| and |,| do not work for multi line motions.
+
+- The plugin sets the search register (so hls triggers incorrectly)
+  (probably needs a rewrite without using expression-mappings)
+
 
 ==============================================================================
 3. Feedback                                         *improvedft-feedback*
