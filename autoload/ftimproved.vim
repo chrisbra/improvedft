@@ -18,43 +18,64 @@ let s:cpo= &cpo
 set cpo&vim
 
 fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
-	let cnt  = v:count1
 	let char = nr2char(getchar())
 	if  char == ""
 		" abort when Escape has been hit
 		return char
 	endif
-	let char='\V'.escape(char, '\')
+	let pat = '\V'.escape(char, '\')
+	" Check if normal f/t commands would work:
+	if search(pat, 'nW') == line('.') && a:fwd
+		return (a:f ? 'f' : 't'). char
+	elseif search(pat, 'bnw') == line('.') && !a:fwd
+		return (a:f ? 'F' : 'T'). char
+	endif
+	let cnt  = v:count1
 	let cmd  = (a:fwd ? '/' : '?')
 	let off  = cmd
 	let res  = ''
 	if a:f
 		" Searching using 'f' command
 		if a:mode == 'o'
-			let off .= (a:fwd ? 'e' : 's')
+			" Make it a visual motion, because there is a strange vi 
+			" behaviour Cite from Vim source code:
+			"
+			" * Imitate the strange Vi behaviour: If the delete spans more
+            " * than one line and motion_type == MCHAR and the result is a
+			" * blank line, make the delete linewise. 
+			" * Don't do this for the change command or Visual mode.
+			"let off .= (a:fwd ? '' : 's')
+			if a:mode !~# 'v\|'
+				" Not working correctly in Vim. This looks like a bug:
+				" Message-ID: 20120104185216.GB9668@256bit.org
+				let cmd = cnt . 'v' . cmd
+			endif
 		endif
-		let res = cmd.char.off."\n"
+		let res = cmd.pat.off."\n"
 	else
 		" Searching using 't' command
-		if a:mode =~? 'o\|v\|'
-			"let off  .= (a:fwd ? 's' : 'e') . 
-			"	\ (a:mode == 'v' ? '-' : '')
-			let off  .= (a:fwd ? 's-' : 'e+')
+		if a:mode =~? 'v\|'
+			let off  .= (a:fwd ? 's-' : 'e')
+		elseif a:mode =~ 'o'
+			"let off  .= (a:fwd ? 's' : 'e+')
+			"let off  .= 's'
 		else
+			" nnormal movement
 			let off  .= (a:fwd ? 'e-' : 'e+')
 		endif
 		let counter = 1
 		let oldpos = getpos('.')
 		while cnt >= counter
-			let tline = search(char, (a:fwd ? '' : 'b') .'W')
+			let tline = search(pat, (a:fwd ? '' : 'b') .'W')
 			let counter += 1
 		endw
-		if tline != oldpos[1] && match(getline(tline), '^'.char) == 0
-			let res = cmd.char.off."\n"
+		if tline != oldpos[1] && match(getline(tline), '^'.pat) == 0
+			let res = cmd.pat.off."\n"
 		else
-			let res = cmd.char.off."\n"
+			let res = cmd.pat.off."\n"
 		endif
 	endif
+	echo res
 	return res ":call histdel('/', -1)\n"
 endfun
 
