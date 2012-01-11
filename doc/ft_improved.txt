@@ -54,8 +54,6 @@ If for any reason, you want to disable the plugin, use >
 2.3 Bugs                                             *improvedft-Bugs*
 --------
 
-- The |;| and |,| do not work for multi line motions.
-
 - The plugin sets the search register (so hls triggers incorrectly)
   (probably needs a rewrite without using expression-mappings)
 
