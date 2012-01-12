@@ -11,7 +11,7 @@
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: XXX 1 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 1 :AutoInstall: ft_improved.vim
 "
 " Functions:
 let s:cpo= &cpo

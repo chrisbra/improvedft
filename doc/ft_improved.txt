@@ -1,4 +1,4 @@
-ft_improved Better f/t command for Vim
+*ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
 Version: 0.1 Mon, 02 Jan 2012 21:33:50 +0100
@@ -68,7 +68,7 @@ If for any reason, you want to disable the plugin, use >
 
 Feedback is always welcome. If you like the plugin, please rate it at the
 vim-page:
-http://www.vim.org/scripts/script.php?script_id=XXXX
+http://www.vim.org/scripts/script.php?script_id=3877
 
 You can also follow the development of the plugin at github:
 http://github.com/chrisbra/improvedft
