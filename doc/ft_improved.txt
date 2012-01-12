@@ -79,12 +79,11 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
-0.1: Jan 02, 2012 {{{1
+0.1: Jan 12, 2012 {{{1
 
 - Initial upload
 - development versions are available at the github repository
 - put plugin on a public repository (http://github.com/chrisbra/improvedft)
-
   }}}
 
 ==============================================================================
