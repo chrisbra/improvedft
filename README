@@ -1,4 +1,4 @@
-ft_improved Better f/t command for Vim
+*ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
 Version: 0.1 Mon, 02 Jan 2012 21:33:50 +0100
@@ -16,6 +16,7 @@ Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
         2.  Manual.....................................: |improvedft-manual|
         2.1   Enable...................................: |improvedft-Enable|
         2.2   Disable..................................: |improvedft-Disable|
+        2.3   Bugs.....................................: |improvedft-Bugs|
         3.  Feedback...................................: |improvedft-feedback|
         4.  History....................................: |improvedft-history|
 
@@ -26,7 +27,8 @@ Functionality
 
 This plugin tries to improve the existing behaviour of the |f|, |F|, |t| and
 |T| command by letting them move the cursor not only inside the current line,
-but move to whatever line, where the character is found.
+but move to whatever line, where the character is found. Also the |,| and |;|
+command should just work as expected.
 
 It does consider counts given and should work simply as a user would be
 expecting.
@@ -50,12 +52,23 @@ If for any reason, you want to disable the plugin, use >
     :DisableImprovedFT
 <
 
+2.3 Bugs                                             *improvedft-Bugs*
+--------
+
+- The plugin sets the search register (so 'hls' triggers incorrectly)
+  (probably needs a rewrite without using expression-mappings)
+
+- When using T as operator and the match is the last character of a previous
+  line, the motion will become inclusive and you will incorrectly also change
+  that character. (also when ',' or ';' are searching backwards) That seems to
+  be a bug within Vim. See also |exclusive|
+
 ==============================================================================
 3. Feedback                                         *improvedft-feedback*
 
 Feedback is always welcome. If you like the plugin, please rate it at the
 vim-page:
-http://www.vim.org/scripts/script.php?script_id=3075
+http://www.vim.org/scripts/script.php?script_id=3877
 
 You can also follow the development of the plugin at github:
 http://github.com/chrisbra/improvedft
@@ -66,12 +79,11 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
-0.1: Jan 02, 2012 {{{1
+0.1: Jan 12, 2012 {{{1
 
 - Initial upload
 - development versions are available at the github repository
 - put plugin on a public repository (http://github.com/chrisbra/improvedft)
-
   }}}
 
 ==============================================================================
