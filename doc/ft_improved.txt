@@ -27,7 +27,8 @@ Functionality
 
 This plugin tries to improve the existing behaviour of the |f|, |F|, |t| and
 |T| command by letting them move the cursor not only inside the current line,
-but move to whatever line, where the character is found.
+but move to whatever line, where the character is found. Also the |,| and |;|
+command should just work as expected.
 
 It does consider counts given and should work simply as a user would be
 expecting.
@@ -54,16 +55,20 @@ If for any reason, you want to disable the plugin, use >
 2.3 Bugs                                             *improvedft-Bugs*
 --------
 
-- The plugin sets the search register (so hls triggers incorrectly)
+- The plugin sets the search register (so 'hls' triggers incorrectly)
   (probably needs a rewrite without using expression-mappings)
 
+- When using T as operator and the match is the last character of a previous
+  line, the motion will become inclusive and you will incorrectly also change
+  that character. (also when ',' or ';' are searching backwards) That seems to
+  be a bug within Vim. See also |exclusive|
 
 ==============================================================================
 3. Feedback                                         *improvedft-feedback*
 
 Feedback is always welcome. If you like the plugin, please rate it at the
 vim-page:
-http://www.vim.org/scripts/script.php?script_id=3075
+http://www.vim.org/scripts/script.php?script_id=XXXX
 
 You can also follow the development of the plugin at github:
 http://github.com/chrisbra/improvedft
