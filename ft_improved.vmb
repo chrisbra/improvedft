@@ -5,9 +5,9 @@ plugin/ft_improved.vim	[[[1
 45
 " ft_improved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.1
+" Version:	   0.2
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Mon, 02 Jan 2012 21:33:50 +0100
+" Last Change: Fri, 13 Jan 2012 21:30:54 +0100
 "
 " Script: 
 " Copyright:   (c) 2009, 2010, 2011, 2012  by Christian Brabandt
@@ -16,7 +16,7 @@ plugin/ft_improved.vim	[[[1
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 1 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 2 :AutoInstall: ft_improved.vim
 "
 " Init: {{{1
 let s:cpo= &cpo
@@ -52,9 +52,9 @@ autoload/ftimproved.vim	[[[1
 274
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.1
+" Version:	   0.2
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Mon, 02 Jan 2012 21:33:50 +0100
+" Last Change: Fri, 13 Jan 2012 21:30:54 +0100
 "
 " Script: 
 " Copyright:   (c) 2009, 2010, 2011, 2012  by Christian Brabandt
@@ -63,14 +63,14 @@ autoload/ftimproved.vim	[[[1
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 1 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 2 :AutoInstall: ft_improved.vim
 "
 " Functions:
 let s:cpo= &cpo
 set cpo&vim
 
 "Debug Mode:
-let s:debug = 1
+let s:debug = 0
 
 let s:escape = ""
 
@@ -325,11 +325,11 @@ unlet s:cpo
 " Modeline {{{1
 " vim: ts=4 sts=4 fdm=marker com+=l\:\" fdl=0
 doc/ft_improved.txt	[[[1
-91
+95
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
-Version: 0.1 Mon, 02 Jan 2012 21:33:50 +0100
+Version: 0.2 Fri, 13 Jan 2012 21:30:54 +0100
 
 Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
            The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
@@ -406,6 +406,10 @@ third line of this document.
 
 ==============================================================================
 4. History                                              *improvedft-history*
+
+0.2: Jan 13, 2012 {{{1
+- disable debug mode
+- enable |GLVS|
 
 0.1: Jan 12, 2012 {{{1
 
