@@ -88,7 +88,14 @@ endfun
 
 fun! ftimproved#ColonCommand(f, mode) "{{{1
 	" should be a noop
-	let fcmd = (a:f ? ';' : ',')
+	if !exists("s:searchforward")
+	    let s:searchforward = 1
+	endif
+	if s:searchforward
+	    let fcmd = (a:f ? ';' : ',')
+	else
+	    let fcmd = (!a:f ? ';' : ',')
+	endif
 	if !exists("s:colon")
 		let s:colon={}
 		let s:colon[';']=''
@@ -139,12 +146,15 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 	let pat  = <sid>EscapePat(char)
 	" Check if normal f/t commands would work:
 	if search(pat, 'nW') == line('.') && a:fwd
+		let s:searchforward = 1
 		let cmd = (a:f ? 'f' : 't')
 		call <sid>ColonPattern(<sid>SearchForChar(cmd),
 				\ pat, '', a:f)
 		return cmd.char
 
 	elseif search(pat, 'bnw') == line('.') && !a:fwd
+		let s:searchforward = 0
+		let cmd = (a:f ? 'f' : 't')
 		let cmd = (a:f ? 'F' : 'T')
 		call <sid>ColonPattern(<sid>SearchForChar(cmd),
 				\ pat, '', a:f)
