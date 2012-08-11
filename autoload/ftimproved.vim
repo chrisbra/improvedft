@@ -154,7 +154,6 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 	elseif search(pat, 'bnw') == line('.') && !a:fwd
 		let s:searchforward = 0
-		let cmd = (a:f ? 'f' : 't')
 		let cmd = (a:f ? 'F' : 'T')
 		call <sid>ColonPattern(<sid>SearchForChar(cmd),
 				\ pat, '', a:f)
