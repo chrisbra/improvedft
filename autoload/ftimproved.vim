@@ -266,6 +266,9 @@ fun! ftimproved#Activate(enable) "{{{1
 		call <sid>Map('T', 'ftimproved#FTCommand(0,0,X)')
 		call <sid>Map(';', 'ftimproved#ColonCommand(1,X)')
 		call <sid>Map(',', 'ftimproved#ColonCommand(0,X)')
+		" Disable the remapping of those keys by the yankring plugin
+		" github issue #1
+		let g:yankring_zap_keys = '/ ?'
 	else
 		call <sid>Unmap('f')
 		call <sid>Unmap('F')
@@ -273,6 +276,10 @@ fun! ftimproved#Activate(enable) "{{{1
 		call <sid>Unmap('T')
 		call <sid>Unmap(',')
 		call <sid>Unmap(';')
+		" enable Yankring, and reload the YankRing
+		let g:yankring_zap_keys = 'f F t T / ?'
+		unlet g:loaded_yankring
+		ru plugin/yankring.vim
 	endif
 endfun
 
