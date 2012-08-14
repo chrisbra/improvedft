@@ -267,8 +267,16 @@ fun! ftimproved#Activate(enable) "{{{1
 		call <sid>Map(';', 'ftimproved#ColonCommand(1,X)')
 		call <sid>Map(',', 'ftimproved#ColonCommand(0,X)')
 		" Disable the remapping of those keys by the yankring plugin
+		" and reload the Yankring plugin
 		" github issue #1
 		let g:yankring_zap_keys = '/ ?'
+		if exists("g:loaded_yankring") &&
+			\ g:loaded_yankring > 1
+			" should make sure, the user didn't set this variable to simply
+			" deactivate the plugin. If so, he probably only set it to 1...
+			unlet g:loaded_yankring
+			ru plugin/yankring.vim
+		endif
 	else
 		call <sid>Unmap('f')
 		call <sid>Unmap('F')
@@ -277,9 +285,14 @@ fun! ftimproved#Activate(enable) "{{{1
 		call <sid>Unmap(',')
 		call <sid>Unmap(';')
 		" enable Yankring, and reload the YankRing
-		let g:yankring_zap_keys = 'f F t T / ?'
-		unlet g:loaded_yankring
-		ru plugin/yankring.vim
+		unlet! g:yankring_zap_keys
+		if exists("g:loaded_yankring") &&
+			\ g:loaded_yankring > 1
+			" should make sure, the user didn't set this variable to simply
+			" deactivate the plugin. If so, he probably only set it to 1...
+			unlet g:loaded_yankring
+			ru plugin/yankring.vim
+		endif
 	endif
 endfun
 
