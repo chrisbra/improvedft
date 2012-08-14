@@ -79,6 +79,10 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
+0.3: (unreleased)
+- fix issue https://github.com/chrisbra/improvedft/issues/1
+  by disallowing the Yankring to map the keys f F t and T
+
 0.2: Jan 13, 2012 {{{1
 - disable debug mode
 - enable |GLVS|
