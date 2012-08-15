@@ -16,7 +16,8 @@ Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
         2.  Manual.....................................: |improvedft-manual|
         2.1   Enable...................................: |improvedft-Enable|
         2.2   Disable..................................: |improvedft-Disable|
-        2.3   Bugs.....................................: |improvedft-Bugs|
+        2.3   Tips.....................................: |improvedft-Tips|
+        2.4   Bugs.....................................: |improvedft-Bugs|
         3.  Feedback...................................: |improvedft-feedback|
         4.  History....................................: |improvedft-history|
 
@@ -52,7 +53,35 @@ If for any reason, you want to disable the plugin, use >
     :DisableImprovedFT
 <
 
-2.3 Bugs                                             *improvedft-Bugs*
+2.3 Tips                                             *improvedft-Tips*
+--------
+
+YankRing and the improved ft plugin
+-----------------------------------
+
+Both plugins map the ',', ';', 'f', 'F', 't' and 'T' key, so they don't work
+together very well. The improved ft plugin tries to work around that by
+setting a YankRing option that prevents mapping those keys and reloading the
+YankRing plugin.
+
+The following YankRing variables are set by the improved ft plugin: >
+
+        let g:yankring_zap_keys = "/ ?"
+        let g:yankring_o_keys  = 'b B w W e E d h j k l H M L y G ^ 0 $'
+        let g:yankring_o_keys .= ' g_  g^ gm g$ gk gj gg ge gE - + _ '
+        let g:yankring_o_keys .= ' iw iW aw aW as is ap ip a] a[ i] i['
+        let g:yankring_o_keys .= ' a) a( ab i) i( ib a> a< i> i< at it'
+        let g:yankring_o_keys .= ' a} a{ aB i} i{ iB a" a'' a` i" i'' i`'
+<
+
+If those variables have been customized in your .vimrc, the plugin detects it
+and removes the ',', ';', 'f', 'F', 't' and 'T' from them.
+
+The drawback of doing this is, that the YankRing possibly doesn't immediately
+catch up in the YankRing itself and possibly will not be caught at all.
+
+
+2.4 Bugs                                             *improvedft-Bugs*
 --------
 
 - The plugin sets the search register (so 'hls' triggers incorrectly)
