@@ -260,23 +260,37 @@ endfun
 
 fun! ftimproved#Activate(enable) "{{{1
 	if a:enable
+		" Disable the remapping of those keys by the yankring plugin
+		" and reload the Yankring plugin
+		" github issue #1
+		let g:yr_mapped = [0, 0]
+		if g:yankring_zap_keys =~# "[ft]"
+			let g:yankring_zap_keys = substitute(g:yankring_zap_keys,
+						\ '\c[ft] ', "", "g")
+			let g:yr_mapped[0] = 1
+		endif
+		if g:yankring_o_keys =~ "[,;]"
+			let g:yankring_o_keys = substitute(g:yankring_o_keys, '[,;] ',
+						\ "", "g")
+			let g:yr_mapped[1] = 1
+		endif
+		if exists("g:loaded_yankring") &&
+			\ g:loaded_yankring > 1
+			" should make sure, the user didn't set this variable to simply
+			" deactivate the plugin. If so, he probably only set it to 1...
+			if exists(":YRToggle") == 2
+				" turn off and on again yankring
+				YRToggle 0
+				YRToggle 1
+			endif
+		endif
+		" f,F,t,T should be unmaped now, so we can map it.
 		call <sid>Map('f', 'ftimproved#FTCommand(1,1,X)')
 		call <sid>Map('F', 'ftimproved#FTCommand(1,0,X)')
 		call <sid>Map('t', 'ftimproved#FTCommand(0,1,X)')
 		call <sid>Map('T', 'ftimproved#FTCommand(0,0,X)')
 		call <sid>Map(';', 'ftimproved#ColonCommand(1,X)')
 		call <sid>Map(',', 'ftimproved#ColonCommand(0,X)')
-		" Disable the remapping of those keys by the yankring plugin
-		" and reload the Yankring plugin
-		" github issue #1
-		let g:yankring_zap_keys = '/ ?'
-		if exists("g:loaded_yankring") &&
-			\ g:loaded_yankring > 1
-			" should make sure, the user didn't set this variable to simply
-			" deactivate the plugin. If so, he probably only set it to 1...
-			unlet g:loaded_yankring
-			ru plugin/yankring.vim
-		endif
 	else
 		call <sid>Unmap('f')
 		call <sid>Unmap('F')
@@ -285,13 +299,22 @@ fun! ftimproved#Activate(enable) "{{{1
 		call <sid>Unmap(',')
 		call <sid>Unmap(';')
 		" enable Yankring, and reload the YankRing
-		unlet! g:yankring_zap_keys
+		if g:yr_mapped[0]
+			let g:yankring_zap_keys .= 'f F t T '
+		endif
+		if g:yr_mapped[1]
+			let g:yankring_o_keys .= ', ; '
+		endif
+
 		if exists("g:loaded_yankring") &&
 			\ g:loaded_yankring > 1
 			" should make sure, the user didn't set this variable to simply
 			" deactivate the plugin. If so, he probably only set it to 1...
-			unlet g:loaded_yankring
-			ru plugin/yankring.vim
+			if exists(":YRToggle") == 2
+				" turn off and on again yankring
+				YRToggle 0
+				YRToggle 1
+			endif
 		endif
 	endif
 endfun
