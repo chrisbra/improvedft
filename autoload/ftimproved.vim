@@ -270,7 +270,10 @@ fun! ftimproved#Activate(enable) "{{{1
 			" deactivate the plugin. If so, he probably only set it to 1...
 			if exists(":YRToggle") == 2
 				" turn off and on again yankring
+				" first turn off with the original values of the variables,
+				" so everything is disabled correctly
 				sil YRToggle 0
+				" now adjust the Yankring options
 				if g:yankring_zap_keys =~# "[ft]"
 					let g:yankring_zap_keys =
 								\ substitute(g:yankring_zap_keys,
@@ -283,6 +286,7 @@ fun! ftimproved#Activate(enable) "{{{1
 								\ "", "g")
 					let g:yr_mapped[1] = 1
 				endif
+				" enable the plugin again
 				sil YRToggle 1
 			endif
 		else
@@ -315,7 +319,7 @@ fun! ftimproved#Activate(enable) "{{{1
 			if exists(":YRToggle") == 2
 				" turn off and on again yankring
 				sil YRToggle 0
-				" enable Yankring, and reload the YankRing
+				" reset the yankring options
 				if g:yr_mapped[0]
 					let g:yankring_zap_keys .= 'f F t T '
 				else
@@ -327,6 +331,7 @@ fun! ftimproved#Activate(enable) "{{{1
 					unlet! g:yankring_o_keys
 				endif
 
+				" enable Yankring, and reload the YankRing
 				sil YRToggle 1
 			endif
 		endif
