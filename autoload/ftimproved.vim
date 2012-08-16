@@ -268,20 +268,22 @@ fun! ftimproved#Activate(enable) "{{{1
 			\ g:loaded_yankring > 1
 			" should make sure, the user didn't set this variable to simply
 			" deactivate the plugin. If so, he probably only set it to 1...
-			if g:yankring_zap_keys =~# "[ft]"
-				let g:yankring_zap_keys = substitute(g:yankring_zap_keys,
-							\ '\c[ft] ', "", "g")
-				let g:yr_mapped[0] = 1
-			endif
-			if g:yankring_o_keys =~ "[,;]"
-				let g:yankring_o_keys = substitute(g:yankring_o_keys, '[,;] ',
-							\ "", "g")
-				let g:yr_mapped[1] = 1
-			endif
 			if exists(":YRToggle") == 2
 				" turn off and on again yankring
-				YRToggle 0
-				YRToggle 1
+				sil YRToggle 0
+				if g:yankring_zap_keys =~# "[ft]"
+					let g:yankring_zap_keys =
+								\ substitute(g:yankring_zap_keys,
+								\ '\c[ft] ', "", "g")
+					let g:yr_mapped[0] = 1
+				endif
+				if g:yankring_o_keys =~ "[,;]"
+					let g:yankring_o_keys =
+								\ substitute(g:yankring_o_keys, '[,;] ',
+								\ "", "g")
+					let g:yr_mapped[1] = 1
+				endif
+				sil YRToggle 1
 			endif
 		else
 			" YankRing wasn't loaded yet, so init those variables
@@ -306,22 +308,26 @@ fun! ftimproved#Activate(enable) "{{{1
 		call <sid>Unmap('T')
 		call <sid>Unmap(',')
 		call <sid>Unmap(';')
-		" enable Yankring, and reload the YankRing
-		if g:yr_mapped[0]
-			let g:yankring_zap_keys .= 'f F t T '
-		endif
-		if g:yr_mapped[1]
-			let g:yankring_o_keys .= ', ; '
-		endif
-
 		if exists("g:loaded_yankring") &&
 			\ g:loaded_yankring > 1
 			" should make sure, the user didn't set this variable to simply
 			" deactivate the plugin. If so, he probably only set it to 1...
 			if exists(":YRToggle") == 2
 				" turn off and on again yankring
-				YRToggle 0
-				YRToggle 1
+				sil YRToggle 0
+				" enable Yankring, and reload the YankRing
+				if g:yr_mapped[0]
+					let g:yankring_zap_keys .= 'f F t T '
+				else
+					unlet! g:yankring_zap_keys
+				endif
+				if g:yr_mapped[1]
+					let g:yankring_o_keys .= ', ; '
+				else
+					unlet! g:yankring_o_keys
+				endif
+
+				sil YRToggle 1
 			endif
 		endif
 	endif
