@@ -111,6 +111,7 @@ third line of this document.
 0.3: Aug 20, 2012 "{{{1
 - fix issue https://github.com/chrisbra/improvedft/issues/1
   by disallowing the Yankring to map the keys f F t and T
+- Better mapping of ';' key (patch by Marcin Szamotulski, thanks!)
 
 0.2: Jan 13, 2012 {{{1
 - disable debug mode
