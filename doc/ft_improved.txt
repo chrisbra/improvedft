@@ -108,6 +108,9 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
+0.4: (unreleased) "{{{1
+- special handling of pattern / and ?
+
 0.3: Aug 20, 2012 "{{{1
 - fix issue https://github.com/chrisbra/improvedft/issues/1
   by disallowing the Yankring to map the keys f F t and T
