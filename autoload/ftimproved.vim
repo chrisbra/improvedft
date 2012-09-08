@@ -63,8 +63,9 @@ fun! <sid>SearchForChar(char) "{{{1
 	endif
 endfun
 
-fun! <sid>EscapePat(pat) "{{{1
-	return '\V'.escape(a:pat, '\')
+fun! <sid>EscapePat(pat, fwd) "{{{1
+	let special = (a:fwd ? '/' : '')
+	return '\V'.escape(a:pat, '\'.special)
 endfun
 
 fun! <sid>ColonPattern(cmd, pat, off, f) "{{{1
@@ -111,7 +112,7 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	endif
 	if res != fcmd
 		try
-			let pat = matchlist(res, '^v\?\([/?]\)\([^/?]*\)\1')
+			let pat = matchlist(res, '^v\?\([/?]\)\(.*\)\1')
 			if !search(pat[2], (pat[1]=='?' ? 'b' : '').'nW') || 
 				\ <sid>CheckSearchWrap(pat[2], pat[1]!='?', v:count1)
 				" noop
@@ -143,7 +144,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 	endif
 	let no_offset = 0
 	let cmd  = (a:fwd ? '/' : '?')
-	let pat  = <sid>EscapePat(char)
+	let pat  = <sid>EscapePat(char, a:fwd)
 	" Check if normal f/t commands would work:
 	if search(pat, 'nW') == line('.') && a:fwd
 		let s:searchforward = 1
@@ -191,7 +192,8 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		"endif
 		let cmd  = op_off[0].cmd
 		let off .= op_off[1]
-		let res  = cmd.pat.off."\n"
+		let pat1  = (a:fwd ? pat : escape(pat, '?'))
+		let res  = cmd.pat1.off."\n"
 	else
 		" Searching using 't' command
 		let cmd  = op_off[0].cmd
@@ -207,13 +209,15 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			let off .= op_off[1]
 		endif
 
-		let res = cmd.pat.off."\n"
+		let pat1 = (a:fwd ? pat : escape(pat, '?'))
+		let res = cmd.pat1.off."\n"
 	endif
 
 	if <sid>CheckSearchWrap(pat, a:fwd, cnt)
 		let res = s:escape
 	endif
 
+	let pat = pat1
 	" save pattern for ';' and ','
 	call <sid>ColonPattern(cmd, pat,
 			\ off. (no_offset ? op_off[1] : ''), a:f)
