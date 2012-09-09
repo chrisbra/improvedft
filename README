@@ -1,7 +1,7 @@
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
-Version: 0.3 Mon, 20 Aug 2012 20:00:21 +0200
+Version: 0.4 Sun, 09 Sep 2012 14:13:31 +0200
 
 Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
            The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
@@ -107,6 +107,9 @@ third line of this document.
 
 ==============================================================================
 4. History                                              *improvedft-history*
+
+0.4: Sep 09, 2012 "{{{1
+- special handling of pattern / and ?
 
 0.3: Aug 20, 2012 "{{{1
 - fix issue https://github.com/chrisbra/improvedft/issues/1
