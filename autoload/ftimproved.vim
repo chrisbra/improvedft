@@ -175,6 +175,13 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		return s:escape
 	endif
 
+	" ignore case of pattern? Does only work with search, not with original
+	" f/F/t/T commands
+	if exists("g:ft_improved_ignorecase") &&
+				\ g:ft_improved_ignorecase
+		let pat = '\c'.pat
+	endif
+
 	let cnt  = v:count1
 	let off  = cmd
 	let res  = ''
