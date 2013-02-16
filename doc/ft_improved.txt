@@ -1,7 +1,7 @@
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
-Version: 0.4 Sun, 09 Sep 2012 14:13:31 +0200
+Version: 0.5 Sat, 16 Feb 2013 23:21:31 +0100
 
 Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
            The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
@@ -126,7 +126,7 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
-0.5: (unreleased) "{{{1
+0.5: Feb 16, 2013 "{{{1
 - ignorecase when searching, when g:ft_improved_ignorecase is set
   
 0.4: Sep 09, 2012 "{{{1

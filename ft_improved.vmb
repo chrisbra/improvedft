@@ -5,9 +5,9 @@ plugin/ft_improved.vim	[[[1
 45
 " ft_improved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.4
+" Version:	   0.5
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Sun, 09 Sep 2012 14:13:31 +0200
+" Last Change: Sat, 16 Feb 2013 23:21:31 +0100
 "
 " Script: 
 " Copyright:   (c) 2009, 2010, 2011, 2012  by Christian Brabandt
@@ -16,7 +16,7 @@ plugin/ft_improved.vim	[[[1
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 4 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 5 :AutoInstall: ft_improved.vim
 "
 " Init: {{{1
 let s:cpo= &cpo
@@ -49,12 +49,12 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-355
+362
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.4
+" Version:	   0.5
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Sun, 09 Sep 2012 14:13:31 +0200
+" Last Change: Sat, 16 Feb 2013 23:21:31 +0100
 "
 " Script: 
 " Copyright:   (c) 2009, 2010, 2011, 2012  by Christian Brabandt
@@ -63,7 +63,7 @@ autoload/ftimproved.vim	[[[1
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 4 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 5 :AutoInstall: ft_improved.vim
 "
 " Functions:
 let s:cpo= &cpo
@@ -225,6 +225,13 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		call <sid>ColonPattern(<sid>SearchForChar(cmd),
 				\ pat, '', a:f)
 		return s:escape
+	endif
+
+	" ignore case of pattern? Does only work with search, not with original
+	" f/F/t/T commands
+	if exists("g:ft_improved_ignorecase") &&
+				\ g:ft_improved_ignorecase
+		let pat = '\c'.pat
 	endif
 
 	let cnt  = v:count1
@@ -406,11 +413,11 @@ unlet s:cpo
 " Modeline {{{1
 " vim: ts=4 sts=4 fdm=marker com+=l\:\" fdl=0
 doc/ft_improved.txt	[[[1
-132
+153
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
-Version: 0.4 Sun, 09 Sep 2012 14:13:31 +0200
+Version: 0.5 Sat, 16 Feb 2013 23:21:31 +0100
 
 Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
            The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
@@ -426,6 +433,8 @@ Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
         2.1   Enable...................................: |improvedft-Enable|
         2.2   Disable..................................: |improvedft-Disable|
         2.3   Tips.....................................: |improvedft-Tips|
+        2.3.1 Using the YankRing.......................: |improvedft-YankRing|
+        2.3.2 Ignoring case............................: |improvedft-ignorecase|
         2.4   Bugs.....................................: |improvedft-Bugs|
         3.  Feedback...................................: |improvedft-feedback|
         4.  History....................................: |improvedft-history|
@@ -462,11 +471,12 @@ If for any reason, you want to disable the plugin, use >
     :DisableImprovedFT
 <
 
-2.3 Tips                                             *improvedft-Tips*
+2.3 Tips                                                  *improvedft-Tips*
 --------
+                                                        *improvedft-YankRing*
 
-YankRing and the improved ft plugin
------------------------------------
+2.3.1 YankRing and the improved ft plugin
+------------------------------------------
 
 Both plugins map the ',', ';', 'f', 'F', 't' and 'T' key, so they don't work
 together very well. The improved ft plugin tries to work around that by
@@ -489,6 +499,21 @@ and removes the ',', ';', 'f', 'F', 't' and 'T' from them.
 The drawback of doing this is, that the YankRing possibly doesn't immediately
 catch up in the YankRing itself and possibly will not be caught at all.
 
+                                                    *improvedft-ignorecase*
+2.3.2 Ignoring case when searching
+----------------------------------
+
+ft_improved tries to mimic the existing behaviour of the |f| |F| |t| |T| |,| |;|
+commands as closely as possible. However, you might wish to search for the
+character while ignoring case, so that fT will also jump to either the next
+'t' or 'T' character, whichever appears first.
+
+To enable this, simply set this variable in your |.vimrc| >
+
+    :let g:ft_improved_ignorecase = 1
+<
+
+To disable either |unlet| that variable, or set it to zero.
 
 2.4 Bugs                                             *improvedft-Bugs*
 --------
@@ -517,6 +542,9 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
+0.5: Feb 16, 2013 "{{{1
+- ignorecase when searching, when g:ft_improved_ignorecase is set
+  
 0.4: Sep 09, 2012 "{{{1
 - special handling of pattern / and ?
 
