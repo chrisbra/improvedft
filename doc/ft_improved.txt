@@ -99,6 +99,29 @@ To enable this, simply set this variable in your |.vimrc| >
 
 To disable either |unlet| that variable, or set it to zero.
 
+                                                    *improvedft-multichars*
+2.3.3 Searching for more characters
+-----------------------------------
+
+ft_improved tries to mimic the existing behaviour of the |f| |F| |t| |T| |,| |;|
+commands as closely as possible. However, you might wish to search for more
+character to better find your position and not only allow one single char with
+it.
+
+To enable this, simply set this variable in your |.vimrc| >
+
+    :let g:ft_improved_multichars = 1
+<
+
+To disable either |unlet| that variable, or set it to zero.
+
+If you have enabled it this way, you need to press enter, after having entered
+the characters to search for, so that the plugin knows, when not to wait for more
+characters and to start searching.
+
+Note: This is highly experimental and basically turns your |f| |F| |t| |T| |,|
+|;| keys to use a literal search function.
+
 2.4 Bugs                                             *improvedft-Bugs*
 --------
 

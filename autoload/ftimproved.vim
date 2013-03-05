@@ -20,7 +20,7 @@ set cpo&vim
 "Debug Mode:
 let s:debug = 0
 
-let s:escape = ""
+let s:escape = "\e"
 
 fun! <sid>ReturnOperatorOffset(f_mot, fwd, mode) "{{{1
 	" Return list with 2 items
@@ -148,26 +148,36 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		" abort when Escape has been hit
 		return char
 	endif
+	if get(g:, "ft_improved_multichars", 0)
+		let next = getchar()
+		while !empty(next) && next >= 0x20
+			let char .= nr2char(next)
+			let next = getchar()
+		endw
+	endif
 	let no_offset = 0
 	let cmd  = (a:fwd ? '/' : '?')
 	let pat  = <sid>EscapePat(char)
+	if !get(g:, "ft_improved_multichars", 0)
 	" Check if normal f/t commands would work:
-	if search(pat, 'nW') == line('.') && a:fwd
-		let s:searchforward = 1
-		let cmd = (a:f ? 'f' : 't')
-		call <sid>ColonPattern(<sid>SearchForChar(cmd),
-				\ pat, '', a:f)
-		return cmd.char
+		if search(pat, 'nW') == line('.') && a:fwd
+			let s:searchforward = 1
+			let cmd = (a:f ? 'f' : 't')
+			call <sid>ColonPattern(<sid>SearchForChar(cmd),
+					\ pat, '', a:f)
+			return cmd.char
 
-	elseif search(pat, 'bnw') == line('.') && !a:fwd
-		let s:searchforward = 0
-		let cmd = (a:f ? 'F' : 'T')
-		call <sid>ColonPattern(<sid>SearchForChar(cmd),
-				\ pat, '', a:f)
-		return cmd. char
+		elseif search(pat, 'bnw') == line('.') && !a:fwd
+			let s:searchforward = 0
+			let cmd = (a:f ? 'F' : 'T')
+			call <sid>ColonPattern(<sid>SearchForChar(cmd),
+					\ pat, '', a:f)
+			return cmd. char
+		endif
+	endif
 
 	" Check if search would wrap
-	elseif (search(pat, 'nW') == 0 && a:fwd) ||
+	if (search(pat, 'nW') == 0 && a:fwd) ||
 		\  (search(pat, 'bnW') == 0 && !a:fwd)
 		" return ESC
 		call <sid>ColonPattern(<sid>SearchForChar(cmd),
@@ -177,8 +187,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 	" ignore case of pattern? Does only work with search, not with original
 	" f/F/t/T commands
-	if exists("g:ft_improved_ignorecase") &&
-				\ g:ft_improved_ignorecase
+	if !get(g:, "ft_improved_ignorecase", 0)
 		let pat = '\c'.pat
 	endif
 
