@@ -49,7 +49,7 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-387
+392
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.5
@@ -212,8 +212,13 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 	if get(g:, "ft_improved_multichars", 0)
 		call <sid>HighlightMatch(char)
 		let next = getchar()
-		while !empty(next) && next >= 0x20
-			let char .= nr2char(next)
+		while !empty(next) && ( next >= 0x20 ||
+			\ ( len(next) == 3 && next[1] == 'k' && next[2] =='b'))
+			if (len(next) == 3 && next[1] == 'k' && next[2] =='b') " <BS>
+				let char=char[:-2]
+			else
+				let char .= nr2char(next)
+			endif
 			call <sid>HighlightMatch(char)
 			let next = getchar()
 		endw

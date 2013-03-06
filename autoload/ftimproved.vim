@@ -160,8 +160,16 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 	if get(g:, "ft_improved_multichars", 0)
 		call <sid>HighlightMatch(char)
 		let next = getchar()
-		while !empty(next) && next >= 0x20
-			let char .= nr2char(next)
+		while !empty(next) && ( next >= 0x20 ||
+			\ ( len(next) == 3 && next[1] == 'k' && next[2] =='b'))
+			" There seems to be a bug, when <bs> is pressed, next should be
+			" equal to kb but " isn't,
+			" therefore, this ugly workaround is needed....
+			if (len(next) == 3 && next[1] == 'k' && next[2] =='b') " <BS>
+				let char = char[:-2]
+			else
+				let char .= nr2char(next)
+			endif
 			call <sid>HighlightMatch(char)
 			let next = getchar()
 		endw
