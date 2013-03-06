@@ -49,7 +49,7 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-362
+387
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.5
@@ -72,7 +72,7 @@ set cpo&vim
 "Debug Mode:
 let s:debug = 0
 
-let s:escape = ""
+let s:escape = "\e"
 
 fun! <sid>ReturnOperatorOffset(f_mot, fwd, mode) "{{{1
 	" Return list with 2 items
@@ -139,6 +139,15 @@ fun! <sid>ColonPattern(cmd, pat, off, f) "{{{1
 	let s:colon['cmd'] = a:f
 endfun
 
+fun! <sid>HighlightMatch(char) "{{{1
+	if exists("s:matchid")
+		sil! call matchdelete(s:matchid)
+	endif
+	if !empty(a:char)
+		let s:matchid = matchadd('IncSearch', '\V'. a:char)
+		redraw
+	endif
+endfu
 fun! ftimproved#ColonCommand(f, mode) "{{{1
 	" should be a noop
 	if !exists("s:searchforward")
@@ -200,26 +209,43 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		" abort when Escape has been hit
 		return char
 	endif
+	if get(g:, "ft_improved_multichars", 0)
+		call <sid>HighlightMatch(char)
+		let next = getchar()
+		while !empty(next) && next >= 0x20
+			let char .= nr2char(next)
+			call <sid>HighlightMatch(char)
+			let next = getchar()
+		endw
+		call <sid>HighlightMatch('')
+		if  next == s:escape
+			" abort when Escape has been hit
+			return s:escape
+		endif
+	endif
 	let no_offset = 0
 	let cmd  = (a:fwd ? '/' : '?')
 	let pat  = <sid>EscapePat(char)
+	if !get(g:, "ft_improved_multichars", 0)
 	" Check if normal f/t commands would work:
-	if search(pat, 'nW') == line('.') && a:fwd
-		let s:searchforward = 1
-		let cmd = (a:f ? 'f' : 't')
-		call <sid>ColonPattern(<sid>SearchForChar(cmd),
-				\ pat, '', a:f)
-		return cmd.char
+		if search(pat, 'nW') == line('.') && a:fwd
+			let s:searchforward = 1
+			let cmd = (a:f ? 'f' : 't')
+			call <sid>ColonPattern(<sid>SearchForChar(cmd),
+					\ pat, '', a:f)
+			return cmd.char
 
-	elseif search(pat, 'bnw') == line('.') && !a:fwd
-		let s:searchforward = 0
-		let cmd = (a:f ? 'F' : 'T')
-		call <sid>ColonPattern(<sid>SearchForChar(cmd),
-				\ pat, '', a:f)
-		return cmd. char
+		elseif search(pat, 'bnw') == line('.') && !a:fwd
+			let s:searchforward = 0
+			let cmd = (a:f ? 'F' : 'T')
+			call <sid>ColonPattern(<sid>SearchForChar(cmd),
+					\ pat, '', a:f)
+			return cmd. char
+		endif
+	endif
 
 	" Check if search would wrap
-	elseif (search(pat, 'nW') == 0 && a:fwd) ||
+	if (search(pat, 'nW') == 0 && a:fwd) ||
 		\  (search(pat, 'bnW') == 0 && !a:fwd)
 		" return ESC
 		call <sid>ColonPattern(<sid>SearchForChar(cmd),
@@ -229,8 +255,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 	" ignore case of pattern? Does only work with search, not with original
 	" f/F/t/T commands
-	if exists("g:ft_improved_ignorecase") &&
-				\ g:ft_improved_ignorecase
+	if !get(g:, "ft_improved_ignorecase", 0)
 		let pat = '\c'.pat
 	endif
 
@@ -413,7 +438,7 @@ unlet s:cpo
 " Modeline {{{1
 " vim: ts=4 sts=4 fdm=marker com+=l\:\" fdl=0
 doc/ft_improved.txt	[[[1
-153
+176
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
@@ -514,6 +539,29 @@ To enable this, simply set this variable in your |.vimrc| >
 <
 
 To disable either |unlet| that variable, or set it to zero.
+
+                                                    *improvedft-multichars*
+2.3.3 Searching for more characters
+-----------------------------------
+
+ft_improved tries to mimic the existing behaviour of the |f| |F| |t| |T| |,| |;|
+commands as closely as possible. However, you might wish to search for more
+character to better find your position and not only allow one single char with
+it.
+
+To enable this, simply set this variable in your |.vimrc| >
+
+    :let g:ft_improved_multichars = 1
+<
+
+To disable either |unlet| that variable, or set it to zero.
+
+If you have enabled it this way, you need to press enter, after having entered
+the characters to search for, so that the plugin knows, when not to wait for more
+characters and to start searching.
+
+Note: This is highly experimental and basically turns your |f| |F| |t| |T| |,|
+|;| keys to use a literal search function.
 
 2.4 Bugs                                             *improvedft-Bugs*
 --------

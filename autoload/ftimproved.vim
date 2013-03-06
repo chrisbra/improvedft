@@ -87,6 +87,15 @@ fun! <sid>ColonPattern(cmd, pat, off, f) "{{{1
 	let s:colon['cmd'] = a:f
 endfun
 
+fun! <sid>HighlightMatch(char) "{{{1
+	if exists("s:matchid")
+		sil! call matchdelete(s:matchid)
+	endif
+	if !empty(a:char)
+		let s:matchid = matchadd('IncSearch', '\V'. a:char)
+		redraw
+	endif
+endfu
 fun! ftimproved#ColonCommand(f, mode) "{{{1
 	" should be a noop
 	if !exists("s:searchforward")
@@ -149,11 +158,18 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		return char
 	endif
 	if get(g:, "ft_improved_multichars", 0)
+		call <sid>HighlightMatch(char)
 		let next = getchar()
 		while !empty(next) && next >= 0x20
 			let char .= nr2char(next)
+			call <sid>HighlightMatch(char)
 			let next = getchar()
 		endw
+		call <sid>HighlightMatch('')
+		if  next == s:escape
+			" abort when Escape has been hit
+			return s:escape
+		endif
 	endif
 	let no_offset = 0
 	let cmd  = (a:fwd ? '/' : '?')
