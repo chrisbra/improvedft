@@ -49,7 +49,7 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-392
+431
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.5
@@ -69,7 +69,7 @@ autoload/ftimproved.vim	[[[1
 let s:cpo= &cpo
 set cpo&vim
 
-"Debug Mode:
+" Debug Mode:
 let s:debug = 0
 
 let s:escape = "\e"
@@ -115,8 +115,8 @@ fun! <sid>SearchForChar(char) "{{{1
 	endif
 endfun
 
-fun! <sid>EscapePat(pat) "{{{1
-	return '\V'.escape(a:pat, '\')
+fun! <sid>EscapePat(pat, vmagic) "{{{1
+	return (a:vmagic ? '\V' : '').escape(a:pat, '\')
 endfun
 
 fun! <sid>ColonPattern(cmd, pat, off, f) "{{{1
@@ -144,9 +144,9 @@ fun! <sid>HighlightMatch(char) "{{{1
 		sil! call matchdelete(s:matchid)
 	endif
 	if !empty(a:char)
-		let s:matchid = matchadd('IncSearch', '\V'. a:char)
-		redraw
+		let s:matchid = matchadd('IncSearch', a:char)
 	endif
+	redraw
 endfu
 fun! ftimproved#ColonCommand(f, mode) "{{{1
 	" should be a noop
@@ -204,121 +204,140 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 endfun
 
 fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
-	let char = nr2char(getchar())
-	if  char == s:escape
-		" abort when Escape has been hit
-		return char
-	endif
-	if get(g:, "ft_improved_multichars", 0)
-		call <sid>HighlightMatch(char)
-		let next = getchar()
-		while !empty(next) && ( next >= 0x20 ||
-			\ ( len(next) == 3 && next[1] == 'k' && next[2] =='b'))
-			if (len(next) == 3 && next[1] == 'k' && next[2] =='b') " <BS>
-				let char=char[:-2]
-			else
-				let char .= nr2char(next)
-			endif
+	try
+		let char = nr2char(getchar())
+		if  char == s:escape
+			" abort when Escape has been hit
+			return char
+		endif
+		let char  = <sid>EscapePat(char, 1)
+		" ignore case of pattern? Does only work with search, not with original
+		" f/F/t/T commands
+		if !get(g:, "ft_improved_ignorecase", 0)
+			let char = '\c'.char
+		endif
+		if get(g:, "ft_improved_multichars", 0)
+			call <sid>ftAutocmd(1)     " Make sure highlighting will be removed, in case of errors
 			call <sid>HighlightMatch(char)
 			let next = getchar()
-		endw
-		call <sid>HighlightMatch('')
-		if  next == s:escape
-			" abort when Escape has been hit
+			while !empty(next) && ( next >= 0x20 ||
+				\ ( len(next) == 3 && next[1] == 'k' && next[2] =='b'))
+				" There seems to be a bug, when <bs> is pressed, next should be
+				" equal to kb but it isn't,
+				" therefore, this ugly workaround is needed....
+				if (len(next) == 3 && next[1] == 'k' && next[2] =='b') " <BS>
+					let char = substitute(char, '\%(\\\\\|.\)$', '', '')
+				else
+					let char .= <sid>EscapePat(nr2char(next),0)
+				endif
+
+				if char =~# '^\%(\\c\)\?\\V$'
+					" don't highlight empty pattern
+					call <sid>HighlightMatch('')
+				else
+					call <sid>HighlightMatch(char)
+				endif
+				if !search(char, (a:fwd ? '' : 'b'). 'Wn')
+					" Pattern not found, abort
+					return s:escape
+				endif
+				" Get next character
+				let next = getchar()
+			endw
+			if  next == s:escape
+				" abort when Escape has been hit
+				return s:escape
+			endif
+		endif
+		let no_offset = 0
+		let cmd = (a:fwd ? '/' : '?')
+		let pat = char
+		if !get(g:, "ft_improved_multichars", 0)
+		" Check if normal f/t commands would work:
+			if search(pat, 'nW') == line('.') && a:fwd
+				let s:searchforward = 1
+				let cmd = (a:f ? 'f' : 't')
+				call <sid>ColonPattern(<sid>SearchForChar(cmd),
+						\ pat, '', a:f)
+				return cmd.char
+
+			elseif search(pat, 'bnw') == line('.') && !a:fwd
+				let s:searchforward = 0
+				let cmd = (a:f ? 'F' : 'T')
+				call <sid>ColonPattern(<sid>SearchForChar(cmd),
+						\ pat, '', a:f)
+				return cmd. char
+			endif
+		endif
+
+		" Check if search would wrap
+		if (search(pat, 'nW') == 0 && a:fwd) ||
+			\  (search(pat, 'bnW') == 0 && !a:fwd)
+			" return ESC
+			call <sid>ColonPattern(<sid>SearchForChar(cmd),
+					\ pat, '', a:f)
 			return s:escape
 		endif
-	endif
-	let no_offset = 0
-	let cmd  = (a:fwd ? '/' : '?')
-	let pat  = <sid>EscapePat(char)
-	if !get(g:, "ft_improved_multichars", 0)
-	" Check if normal f/t commands would work:
-		if search(pat, 'nW') == line('.') && a:fwd
-			let s:searchforward = 1
-			let cmd = (a:f ? 'f' : 't')
-			call <sid>ColonPattern(<sid>SearchForChar(cmd),
-					\ pat, '', a:f)
-			return cmd.char
 
-		elseif search(pat, 'bnw') == line('.') && !a:fwd
-			let s:searchforward = 0
-			let cmd = (a:f ? 'F' : 'T')
-			call <sid>ColonPattern(<sid>SearchForChar(cmd),
-					\ pat, '', a:f)
-			return cmd. char
-		endif
-	endif
-
-	" Check if search would wrap
-	if (search(pat, 'nW') == 0 && a:fwd) ||
-		\  (search(pat, 'bnW') == 0 && !a:fwd)
-		" return ESC
-		call <sid>ColonPattern(<sid>SearchForChar(cmd),
-				\ pat, '', a:f)
-		return s:escape
-	endif
-
-	" ignore case of pattern? Does only work with search, not with original
-	" f/F/t/T commands
-	if !get(g:, "ft_improved_ignorecase", 0)
-		let pat = '\c'.pat
-	endif
-
-	let cnt  = v:count1
-	let off  = cmd
-	let res  = ''
-	let op_off = <sid>ReturnOperatorOffset(a:f, a:fwd, a:mode)
-	if a:f
-		" Searching using 'f' command
-		"if a:mode == 'o'
-			" There is a strange vi behaviour
-			" Cite from Vim source code:
-			"
-			" * Imitate the strange Vi behaviour: If the delete spans more
-            " * than one line and motion_type == MCHAR and the result is a
-			" * blank line, make the delete linewise. 
-			" * Don't do this for the change command or Visual mode.
-			"if a:mode !~# 'v\|'
-				" Not working correctly in Vim. This looks like a bug:
-				" Message-ID: 20120104185216.GB9668@256bit.org
-				" should be fixed with 7.3.396
-				"let cmd = cnt . 'v' . cmd
+		let cnt  = v:count1
+		let off  = cmd
+		let res  = ''
+		let op_off = <sid>ReturnOperatorOffset(a:f, a:fwd, a:mode)
+		if a:f
+			" Searching using 'f' command
+			"if a:mode == 'o'
+				" There is a strange vi behaviour
+				" Cite from Vim source code:
+				"
+				" * Imitate the strange Vi behaviour: If the delete spans more
+				" * than one line and motion_type == MCHAR and the result is a
+				" * blank line, make the delete linewise. 
+				" * Don't do this for the change command or Visual mode.
+				"if a:mode !~# 'v\|'
+					" Not working correctly in Vim. This looks like a bug:
+					" Message-ID: 20120104185216.GB9668@256bit.org
+					" should be fixed with 7.3.396
+					"let cmd = cnt . 'v' . cmd
+				"endif
 			"endif
-		"endif
-		let cmd  = op_off[0].cmd
-		let off .= op_off[1]
-		let pat1  = (a:fwd ? pat : escape(pat, '?'))
-		let res  = cmd.pat1.off."\n"
-	else
-		" Searching using 't' command
-		let cmd  = op_off[0].cmd
-		" if match is on previous line the last char, don't add offset
-		if !a:fwd
-			let tline=search(pat, 'bnW')
-			if tline < line('.') && getline(tline) !~ pat.'\$'
-				let off .= op_off[1]
-			else
-				let no_offset = 1
-			endif
-		else
+			let cmd  = op_off[0].cmd
 			let off .= op_off[1]
+			let pat1  = (a:fwd ? pat : escape(pat, '?'))
+			let res  = cmd.pat1.off."\n"
+		else
+			" Searching using 't' command
+			let cmd  = op_off[0].cmd
+			" if match is on previous line the last char, don't add offset
+			if !a:fwd
+				let tline=search(pat, 'bnW')
+				if tline < line('.') && getline(tline) !~ pat.'\$'
+					let off .= op_off[1]
+				else
+					let no_offset = 1
+				endif
+			else
+				let off .= op_off[1]
+			endif
+
+			let pat1 = (a:fwd ? pat : escape(pat, '?'))
+			let res = cmd.pat1.off."\n"
 		endif
 
-		let pat1 = (a:fwd ? pat : escape(pat, '?'))
-		let res = cmd.pat1.off."\n"
-	endif
+		if <sid>CheckSearchWrap(pat, a:fwd, cnt)
+			let res = s:escape
+		endif
 
-	if <sid>CheckSearchWrap(pat, a:fwd, cnt)
-		let res = s:escape
-	endif
+		" save pattern for ';' and ','
+		call <sid>ColonPattern(cmd, pat,
+				\ off. (no_offset ? op_off[1] : ''), a:f)
 
-	" save pattern for ';' and ','
-	call <sid>ColonPattern(cmd, pat,
-			\ off. (no_offset ? op_off[1] : ''), a:f)
-
-	let pat = pat1
-	call <sid>DebugOutput(res)
-	return res ":call histdel('/', -1)\n"
+		let pat = pat1
+		call <sid>DebugOutput(res)
+		return res ":call histdel('/', -1)\n"
+	finally 
+		call <sid>HighlightMatch('')
+		call <sid>ftAutocmd(0)
+	endtry
 endfun
 
 fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
@@ -356,6 +375,26 @@ fun! <sid>Unmap(lhs) "{{{1
 		exe "ounmap" a:lhs
 	endif
 endfun
+
+fun! <sid>ftAutocmd(enable) "{{{1
+	if (a:enable)
+		if !exists("#FTImproved#CursorHold")
+			" Makes sure, highlighting is eventually removed, even if the user 
+			" exited from FTCommand by hitting <ctrl-c>
+			augroup FTImproved
+				au!
+				au CursorHold * :call <sid>HighlightMatch('')
+			augroup END
+		endif
+	else
+		if exists("#FTImproved#CursorHold")
+			augroup FTImproved
+				au!
+			augroup END
+			augroup! FTImproved
+		endif
+	endif
+endfu
 
 fun! ftimproved#Activate(enable) "{{{1
 	if a:enable
