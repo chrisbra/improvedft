@@ -165,7 +165,6 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			let char = '\c'.char
 		endif
 		if get(g:, "ft_improved_multichars", 0)
-			call <sid>ftAutocmd(1)     " Make sure highlighting will be removed, in case of errors
 			call <sid>HighlightMatch(char)
 			let next = getchar()
 			while !empty(next) && ( next >= 0x20 ||
@@ -284,7 +283,6 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		return res ":call histdel('/', -1)\n"
 	finally 
 		call <sid>HighlightMatch('')
-		call <sid>ftAutocmd(0)
 	endtry
 endfun
 
@@ -323,26 +321,6 @@ fun! <sid>Unmap(lhs) "{{{1
 		exe "ounmap" a:lhs
 	endif
 endfun
-
-fun! <sid>ftAutocmd(enable) "{{{1
-	if (a:enable)
-		if !exists("#FTImproved#CursorHold")
-			" Makes sure, highlighting is eventually removed, even if the user 
-			" exited from FTCommand by hitting <ctrl-c>
-			augroup FTImproved
-				au!
-				au CursorHold * :call <sid>HighlightMatch('')
-			augroup END
-		endif
-	else
-		if exists("#FTImproved#CursorHold")
-			augroup FTImproved
-				au!
-			augroup END
-			augroup! FTImproved
-		endif
-	endif
-endfu
 
 fun! ftimproved#Activate(enable) "{{{1
 	if a:enable
