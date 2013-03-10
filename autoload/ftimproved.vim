@@ -91,10 +91,16 @@ fun! <sid>HighlightMatch(char) "{{{1
 	if exists("s:matchid")
 		sil! call matchdelete(s:matchid)
 	endif
+	let output=''
 	if !empty(a:char)
+		let output = matchstr(a:char, '^\%(\\c\)\?\\V\zs.*')
 		let s:matchid = matchadd('IncSearch', a:char)
 	endif
-	redraw
+	redraw!
+	" Output input string after(!) redraw.
+	if !empty(output)
+		exe ':echon '. string(output)
+	endif
 endfu
 fun! ftimproved#ColonCommand(f, mode) "{{{1
 	" should be a noop
@@ -191,11 +197,12 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				" Get next character
 				let next = getchar()
 			endw
-			if  next == s:escape
+			if nr2char(next) == s:escape
 				" abort when Escape has been hit
 				return s:escape
 			endif
 		endif
+		let oldsearchpat = @/
 		let no_offset = 0
 		let cmd = (a:fwd ? '/' : '?')
 		let pat = char
@@ -280,7 +287,8 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 		let pat = pat1
 		call <sid>DebugOutput(res)
-		return res ":call histdel('/', -1)\n"
+		return res. ":call histdel('/', -1)\n:let @/='".oldsearchpat."'\n"
+		"return res. ":let @/='".oldsearchpat."'\n"
 	finally 
 		call <sid>HighlightMatch('')
 	endtry
