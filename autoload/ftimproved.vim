@@ -94,7 +94,9 @@ fun! <sid>HighlightMatch(char) "{{{1
 	let output=''
 	if !empty(a:char)
 		let output = matchstr(a:char, '^\%(\\c\)\?\\V\zs.*')
-		let s:matchid = matchadd('IncSearch', a:char)
+		let pat = '\%(\%>'. col('.'). 'c\&\%'. line('.'). 'l'
+		let pat .= '\|\%>'. line('.'). 'l\)'. a:char
+		let s:matchid = matchadd('IncSearch', pat)
 	endif
 	redraw!
 	" Output input string after(!) redraw.
