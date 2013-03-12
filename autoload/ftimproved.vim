@@ -104,6 +104,42 @@ fun! <sid>HighlightMatch(char) "{{{1
 		echohl Normal
 	endif
 endfu
+fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
+	" Check, if search would warp around
+	let counter = 1
+	let oldpos  = getpos('.')
+
+	while a:cnt >= counter
+		let line = search(a:pat, (a:fwd ? '' : 'b') .'W')
+		if !line
+			" don't return anything, if the search would wrap around
+			call setpos('.', oldpos)
+			return 1
+		endif
+		let counter+=1
+	endw
+	call setpos('.', oldpos)
+	return 0
+endfun
+
+fun! <sid>Map(lhs, rhs) "{{{1
+	if !hasmapto(a:rhs, 'nxo')
+		for mode in split('nxo', '\zs')
+			exe mode. "noremap <silent> <expr> <unique>" a:lhs
+					\ substitute(a:rhs, 'X', '"'.mode.'"', '')
+		endfor
+	endif
+endfun
+
+fun! <sid>Unmap(lhs) "{{{1
+	"if hasmapto('ftimproved#FTCommand', 'nov')
+	if !empty(maparg(a:lhs, 'nov'))
+		exe "nunmap" a:lhs
+		exe "xunmap" a:lhs
+		exe "ounmap" a:lhs
+	endif
+endfun
+
 fun! ftimproved#ColonCommand(f, mode) "{{{1
 	" should be a noop
 	if !exists("s:searchforward")
@@ -294,42 +330,6 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 	finally 
 		call <sid>HighlightMatch('')
 	endtry
-endfun
-
-fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
-	" Check, if search would warp around
-	let counter = 1
-	let oldpos  = getpos('.')
-
-	while a:cnt >= counter
-		let line = search(a:pat, (a:fwd ? '' : 'b') .'W')
-		if !line
-			" don't return anything, if the search would wrap around
-			call setpos('.', oldpos)
-			return 1
-		endif
-		let counter+=1
-	endw
-	call setpos('.', oldpos)
-	return 0
-endfun
-
-fun! <sid>Map(lhs, rhs) "{{{1
-	if !hasmapto(a:rhs, 'nxo')
-		for mode in split('nxo', '\zs')
-			exe mode. "noremap <silent> <expr> <unique>" a:lhs
-					\ substitute(a:rhs, 'X', '"'.mode.'"', '')
-		endfor
-	endif
-endfun
-
-fun! <sid>Unmap(lhs) "{{{1
-	"if hasmapto('ftimproved#FTCommand', 'nov')
-	if !empty(maparg(a:lhs, 'nov'))
-		exe "nunmap" a:lhs
-		exe "xunmap" a:lhs
-		exe "ounmap" a:lhs
-	endif
 endfun
 
 fun! ftimproved#Activate(enable) "{{{1
