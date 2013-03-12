@@ -149,6 +149,10 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
+0.6: (unreleased) "{{{1
+- |improvedft-multichars|
+- save and restore search-history in all modes correctly
+
 0.5: Feb 16, 2013 "{{{1
 - ignorecase when searching, when g:ft_improved_ignorecase is set
   
