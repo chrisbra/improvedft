@@ -99,7 +99,9 @@ fun! <sid>HighlightMatch(char) "{{{1
 	redraw!
 	" Output input string after(!) redraw.
 	if !empty(output)
+		echohl Title
 		exe ':echon '. string(output)
+		echohl Normal
 	endif
 endfu
 fun! ftimproved#ColonCommand(f, mode) "{{{1
