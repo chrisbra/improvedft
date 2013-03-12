@@ -87,15 +87,20 @@ fun! <sid>ColonPattern(cmd, pat, off, f) "{{{1
 	let s:colon['cmd'] = a:f
 endfun
 
-fun! <sid>HighlightMatch(char) "{{{1
+fun! <sid>HighlightMatch(char, dir) "{{{1
 	if exists("s:matchid")
 		sil! call matchdelete(s:matchid)
 	endif
 	let output=''
 	if !empty(a:char)
 		let output = matchstr(a:char, '^\%(\\c\)\?\\V\zs.*')
-		let pat = '\%(\%>'. col('.'). 'c\&\%'. line('.'). 'l'
-		let pat .= '\|\%>'. line('.'). 'l\)'. a:char
+		if a:dir
+			let pat = '\%(\%>'. col('.'). 'c\&\%'. line('.'). 'l'
+			let pat .= '\|\%>'. line('.'). 'l\)'. a:char
+		else
+			let pat = '\%(\%<'. col('.'). 'c\&\%'. line('.'). 'l'
+			let pat .= '\|\%<'. line('.'). 'l\)'. a:char
+		endif
 		let s:matchid = matchadd('IncSearch', pat)
 	endif
 	redraw!
@@ -211,7 +216,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			let char = '\c'.char
 		endif
 		if get(g:, "ft_improved_multichars", 0)
-			call <sid>HighlightMatch(char)
+			call <sid>HighlightMatch(char, a:fwd)
 			let next = getchar()
 			while !empty(next) && ( next >= 0x20 ||
 				\ ( len(next) == 3 && next[1] == 'k' && next[2] =='b'))
@@ -226,9 +231,9 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 				if char =~# '^\%(\\c\)\?\\V$'
 					" don't highlight empty pattern
-					call <sid>HighlightMatch('')
+					call <sid>HighlightMatch('', a:fwd)
 				else
-					call <sid>HighlightMatch(char)
+					call <sid>HighlightMatch(char, a:fwd)
 				endif
 				if !search(char, (a:fwd ? '' : 'b'). 'Wn')
 					" Pattern not found, abort
@@ -342,7 +347,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		return res.post_cmd
 		"return res. ":let @/='".oldsearchpat."'\n"
 	finally 
-		call <sid>HighlightMatch('')
+		call <sid>HighlightMatch('', a:fwd)
 	endtry
 endfun
 
