@@ -112,6 +112,7 @@ To enable this, simply set this variable in your |.vimrc| >
 
     :let g:ft_improved_multichars = 1
 <
+As you type, the matching positions will be highlighted.
 
 To disable either |unlet| that variable, or set it to zero.
 
@@ -124,9 +125,6 @@ Note: This is highly experimental and basically turns your |f| |F| |t| |T| |,|
 
 2.4 Bugs                                             *improvedft-Bugs*
 --------
-
-- The plugin sets the search register (so 'hls' triggers incorrectly)
-  (probably needs a rewrite without using expression-mappings)
 
 - When using T as operator and the match is the last character of a previous
   line, the motion will become inclusive and you will incorrectly also change
