@@ -5,7 +5,7 @@
 " Last Change: Sat, 16 Feb 2013 23:21:31 +0100
 "
 " Script: 
-" Copyright:   (c) 2009, 2010, 2011, 2012  by Christian Brabandt
+" Copyright:   (c) 2009 - 2013  by Christian Brabandt
 "			   The VIM LICENSE applies to histwin.vim 
 "			   (see |copyright|) except use "ft_improved.vim" 
 "			   instead of "Vim".
@@ -297,7 +297,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			let cmd  = op_off[0].cmd
 			let off .= op_off[1]
 			let pat1  = (a:fwd ? pat : escape(pat, '?'))
-			let res  = cmd.pat1.off."\n"
+			let res  = cmd.pat1.off."\<cr>"
 		else
 			" Searching using 't' command
 			let cmd  = op_off[0].cmd
@@ -314,7 +314,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			endif
 
 			let pat1 = (a:fwd ? pat : escape(pat, '?'))
-			let res = cmd.pat1.off."\n"
+			let res = cmd.pat1.off."\<cr>"
 		endif
 
 		if <sid>CheckSearchWrap(pat, a:fwd, cnt)
@@ -327,7 +327,19 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 		let pat = pat1
 		call <sid>DebugOutput(res)
-		return res. ":call histdel('/', -1)\n:let @/='".oldsearchpat."'\n"
+		if v:operator == 'c'
+			let mode = "\<C-\>\<C-O>"
+		else
+			let mode = "\<C-\>\<C-N>"
+		endif
+		let post_cmd = (a:mode == 'o' ? mode : '').
+			\ ":call histdel('/', -1)\<cr>".
+			\ (a:mode == 'o' ? mode : '').
+			\ ":let @/='". oldsearchpat. "'\<cr>"
+
+		" for operator-pending mappings, don't return the post_cmd, it could
+		" end up in insert mode
+		return res.post_cmd
 		"return res. ":let @/='".oldsearchpat."'\n"
 	finally 
 		call <sid>HighlightMatch('')
