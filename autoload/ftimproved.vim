@@ -1,8 +1,8 @@
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.5
+" Version:	   0.6
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Sat, 16 Feb 2013 23:21:31 +0100
+" Last Change: Sat, 16 Mar 2013 14:59:42 +0100
 "
 " Script: 
 " Copyright:   (c) 2009 - 2013  by Christian Brabandt
@@ -11,7 +11,7 @@
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 5 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 6 :AutoInstall: ft_improved.vim
 "
 " Functions:
 let s:cpo= &cpo
