@@ -5,9 +5,9 @@ plugin/ft_improved.vim	[[[1
 45
 " ft_improved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.5
+" Version:	   0.6
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Sat, 16 Feb 2013 23:21:31 +0100
+" Last Change: Sat, 16 Mar 2013 14:59:42 +0100
 "
 " Script: 
 " Copyright:   (c) 2009, 2010, 2011, 2012  by Christian Brabandt
@@ -16,7 +16,7 @@ plugin/ft_improved.vim	[[[1
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 5 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 6 :AutoInstall: ft_improved.vim
 "
 " Init: {{{1
 let s:cpo= &cpo
@@ -49,21 +49,21 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-431
+438
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.5
+" Version:	   0.6
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Sat, 16 Feb 2013 23:21:31 +0100
+" Last Change: Sat, 16 Mar 2013 14:59:42 +0100
 "
 " Script: 
-" Copyright:   (c) 2009, 2010, 2011, 2012  by Christian Brabandt
+" Copyright:   (c) 2009 - 2013  by Christian Brabandt
 "			   The VIM LICENSE applies to histwin.vim 
 "			   (see |copyright|) except use "ft_improved.vim" 
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 5 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 6 :AutoInstall: ft_improved.vim
 "
 " Functions:
 let s:cpo= &cpo
@@ -139,15 +139,66 @@ fun! <sid>ColonPattern(cmd, pat, off, f) "{{{1
 	let s:colon['cmd'] = a:f
 endfun
 
-fun! <sid>HighlightMatch(char) "{{{1
+fun! <sid>HighlightMatch(char, dir) "{{{1
 	if exists("s:matchid")
 		sil! call matchdelete(s:matchid)
 	endif
+	let output=''
 	if !empty(a:char)
-		let s:matchid = matchadd('IncSearch', a:char)
+		let output = matchstr(a:char, '^\%(\\c\)\?\\V\zs.*')
+		if a:dir
+			let pat = '\%(\%>'. col('.'). 'c\&\%'. line('.'). 'l'
+			let pat .= '\|\%>'. line('.'). 'l\)'. a:char
+		else
+			let pat = '\%(\%<'. col('.'). 'c\&\%'. line('.'). 'l'
+			let pat .= '\|\%<'. line('.'). 'l\)'. a:char
+		endif
+		let s:matchid = matchadd('IncSearch', pat)
 	endif
-	redraw
+	redraw!
+	" Output input string after(!) redraw.
+	if !empty(output)
+		echohl Title
+		exe ':echon '. string(output)
+		echohl Normal
+	endif
 endfu
+fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
+	" Check, if search would warp around
+	let counter = 1
+	let oldpos  = getpos('.')
+
+	while a:cnt >= counter
+		let line = search(a:pat, (a:fwd ? '' : 'b') .'W')
+		if !line
+			" don't return anything, if the search would wrap around
+			call setpos('.', oldpos)
+			return 1
+		endif
+		let counter+=1
+	endw
+	call setpos('.', oldpos)
+	return 0
+endfun
+
+fun! <sid>Map(lhs, rhs) "{{{1
+	if !hasmapto(a:rhs, 'nxo')
+		for mode in split('nxo', '\zs')
+			exe mode. "noremap <silent> <expr> <unique>" a:lhs
+					\ substitute(a:rhs, 'X', '"'.mode.'"', '')
+		endfor
+	endif
+endfun
+
+fun! <sid>Unmap(lhs) "{{{1
+	"if hasmapto('ftimproved#FTCommand', 'nov')
+	if !empty(maparg(a:lhs, 'nov'))
+		exe "nunmap" a:lhs
+		exe "xunmap" a:lhs
+		exe "ounmap" a:lhs
+	endif
+endfun
+
 fun! ftimproved#ColonCommand(f, mode) "{{{1
 	" should be a noop
 	if !exists("s:searchforward")
@@ -217,8 +268,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			let char = '\c'.char
 		endif
 		if get(g:, "ft_improved_multichars", 0)
-			call <sid>ftAutocmd(1)     " Make sure highlighting will be removed, in case of errors
-			call <sid>HighlightMatch(char)
+			call <sid>HighlightMatch(char, a:fwd)
 			let next = getchar()
 			while !empty(next) && ( next >= 0x20 ||
 				\ ( len(next) == 3 && next[1] == 'k' && next[2] =='b'))
@@ -233,9 +283,9 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 				if char =~# '^\%(\\c\)\?\\V$'
 					" don't highlight empty pattern
-					call <sid>HighlightMatch('')
+					call <sid>HighlightMatch('', a:fwd)
 				else
-					call <sid>HighlightMatch(char)
+					call <sid>HighlightMatch(char, a:fwd)
 				endif
 				if !search(char, (a:fwd ? '' : 'b'). 'Wn')
 					" Pattern not found, abort
@@ -244,11 +294,12 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				" Get next character
 				let next = getchar()
 			endw
-			if  next == s:escape
+			if nr2char(next) == s:escape
 				" abort when Escape has been hit
 				return s:escape
 			endif
 		endif
+		let oldsearchpat = @/
 		let no_offset = 0
 		let cmd = (a:fwd ? '/' : '?')
 		let pat = char
@@ -303,7 +354,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			let cmd  = op_off[0].cmd
 			let off .= op_off[1]
 			let pat1  = (a:fwd ? pat : escape(pat, '?'))
-			let res  = cmd.pat1.off."\n"
+			let res  = cmd.pat1.off."\<cr>"
 		else
 			" Searching using 't' command
 			let cmd  = op_off[0].cmd
@@ -320,7 +371,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			endif
 
 			let pat1 = (a:fwd ? pat : escape(pat, '?'))
-			let res = cmd.pat1.off."\n"
+			let res = cmd.pat1.off."\<cr>"
 		endif
 
 		if <sid>CheckSearchWrap(pat, a:fwd, cnt)
@@ -333,68 +384,24 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 		let pat = pat1
 		call <sid>DebugOutput(res)
-		return res ":call histdel('/', -1)\n"
+		if v:operator == 'c'
+			let mode = "\<C-\>\<C-O>"
+		else
+			let mode = "\<C-\>\<C-N>"
+		endif
+		let post_cmd = (a:mode == 'o' ? mode : '').
+			\ ":call histdel('/', -1)\<cr>".
+			\ (a:mode == 'o' ? mode : '').
+			\ ":let @/='". oldsearchpat. "'\<cr>"
+
+		" for operator-pending mappings, don't return the post_cmd, it could
+		" end up in insert mode
+		return res.post_cmd
+		"return res. ":let @/='".oldsearchpat."'\n"
 	finally 
-		call <sid>HighlightMatch('')
-		call <sid>ftAutocmd(0)
+		call <sid>HighlightMatch('', a:fwd)
 	endtry
 endfun
-
-fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
-	" Check, if search would warp around
-	let counter = 1
-	let oldpos  = getpos('.')
-
-	while a:cnt >= counter
-		let line = search(a:pat, (a:fwd ? '' : 'b') .'W')
-		if !line
-			" don't return anything, if the search would wrap around
-			call setpos('.', oldpos)
-			return 1
-		endif
-		let counter+=1
-	endw
-	call setpos('.', oldpos)
-	return 0
-endfun
-
-fun! <sid>Map(lhs, rhs) "{{{1
-	if !hasmapto(a:rhs, 'nxo')
-		for mode in split('nxo', '\zs')
-			exe mode. "noremap <silent> <expr> <unique>" a:lhs
-					\ substitute(a:rhs, 'X', '"'.mode.'"', '')
-		endfor
-	endif
-endfun
-
-fun! <sid>Unmap(lhs) "{{{1
-	"if hasmapto('ftimproved#FTCommand', 'nov')
-	if !empty(maparg(a:lhs, 'nov'))
-		exe "nunmap" a:lhs
-		exe "xunmap" a:lhs
-		exe "ounmap" a:lhs
-	endif
-endfun
-
-fun! <sid>ftAutocmd(enable) "{{{1
-	if (a:enable)
-		if !exists("#FTImproved#CursorHold")
-			" Makes sure, highlighting is eventually removed, even if the user 
-			" exited from FTCommand by hitting <ctrl-c>
-			augroup FTImproved
-				au!
-				au CursorHold * :call <sid>HighlightMatch('')
-			augroup END
-		endif
-	else
-		if exists("#FTImproved#CursorHold")
-			augroup FTImproved
-				au!
-			augroup END
-			augroup! FTImproved
-		endif
-	endif
-endfu
 
 fun! ftimproved#Activate(enable) "{{{1
 	if a:enable
@@ -482,11 +489,11 @@ unlet s:cpo
 " Modeline {{{1
 " vim: ts=4 sts=4 fdm=marker com+=l\:\" fdl=0
 doc/ft_improved.txt	[[[1
-176
+178
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
-Version: 0.5 Sat, 16 Feb 2013 23:21:31 +0100
+Version: 0.6 Sat, 16 Mar 2013 14:59:42 +0100
 
 Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
            The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
@@ -597,6 +604,7 @@ To enable this, simply set this variable in your |.vimrc| >
 
     :let g:ft_improved_multichars = 1
 <
+As you type, the matching positions will be highlighted.
 
 To disable either |unlet| that variable, or set it to zero.
 
@@ -609,9 +617,6 @@ Note: This is highly experimental and basically turns your |f| |F| |t| |T| |,|
 
 2.4 Bugs                                             *improvedft-Bugs*
 --------
-
-- The plugin sets the search register (so 'hls' triggers incorrectly)
-  (probably needs a rewrite without using expression-mappings)
 
 - When using T as operator and the match is the last character of a previous
   line, the motion will become inclusive and you will incorrectly also change
@@ -633,6 +638,10 @@ third line of this document.
 
 ==============================================================================
 4. History                                              *improvedft-history*
+
+0.6: Mar 16, 2013 "{{{1
+- |improvedft-multichars|
+- save and restore search-history in all modes correctly
 
 0.5: Feb 16, 2013 "{{{1
 - ignorecase when searching, when g:ft_improved_ignorecase is set

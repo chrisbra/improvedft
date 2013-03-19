@@ -1,7 +1,7 @@
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
-Version: 0.5 Sat, 16 Feb 2013 23:21:31 +0100
+Version: 0.6 Sat, 16 Mar 2013 14:59:42 +0100
 
 Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
            The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
@@ -112,6 +112,7 @@ To enable this, simply set this variable in your |.vimrc| >
 
     :let g:ft_improved_multichars = 1
 <
+As you type, the matching positions will be highlighted.
 
 To disable either |unlet| that variable, or set it to zero.
 
@@ -124,9 +125,6 @@ Note: This is highly experimental and basically turns your |f| |F| |t| |T| |,|
 
 2.4 Bugs                                             *improvedft-Bugs*
 --------
-
-- The plugin sets the search register (so 'hls' triggers incorrectly)
-  (probably needs a rewrite without using expression-mappings)
 
 - When using T as operator and the match is the last character of a previous
   line, the motion will become inclusive and you will incorrectly also change
@@ -148,6 +146,10 @@ third line of this document.
 
 ==============================================================================
 4. History                                              *improvedft-history*
+
+0.6: Mar 16, 2013 "{{{1
+- |improvedft-multichars|
+- save and restore search-history in all modes correctly
 
 0.5: Feb 16, 2013 "{{{1
 - ignorecase when searching, when g:ft_improved_ignorecase is set
