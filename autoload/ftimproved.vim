@@ -94,12 +94,18 @@ fun! <sid>HighlightMatch(char, dir) "{{{1
 	let output=''
 	if !empty(a:char)
 		let output = matchstr(a:char, '^\%(\\c\)\?\\V\zs.*')
+		" remove escaping for display
+		let output = substitute(output, '\\\\', '\\', 'g')
 		if a:dir
 			let pat = '\%(\%>'. col('.'). 'c\&\%'. line('.'). 'l'
 			let pat .= '\|\%>'. line('.'). 'l\)'. a:char
+			" Make sure, it only matches within the current viewport
+			let pat = '\%('. pat. '\m\)\ze\&\%<'.(line('w$')+1).'l'
 		else
 			let pat = '\%(\%<'. col('.'). 'c\&\%'. line('.'). 'l'
 			let pat .= '\|\%<'. line('.'). 'l\)'. a:char
+			" Make sure, it only matches within the current viewport
+			let pat = '\%('. pat. '\m\)\ze\&\%>'.(line('w0')-1).'l'
 		endif
 		let s:matchid = matchadd('IncSearch', pat)
 	endif
