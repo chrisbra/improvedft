@@ -153,6 +153,13 @@ fun! <sid>Unmap(lhs) "{{{1
 	endif
 endfun
 
+fun! <sid>CountMatchesWin(pat) "{{{1
+	" Return number of matches of pattern within the current windows viewport
+	" TODO: filter folded lines?
+	let buf = join(getline('w0', 'w$'), '')
+	return len(split(buf, a:pat.'\zs')) - 1
+endfu
+
 fun! ftimproved#ColonCommand(f, mode) "{{{1
 	" should be a noop
 	if !exists("s:searchforward")
@@ -221,7 +228,8 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		if !get(g:, "ft_improved_ignorecase", 0)
 			let char = '\c'.char
 		endif
-		if get(g:, "ft_improved_multichars", 0)
+		if get(g:, "ft_improved_multichars", 0) &&
+				\ <sid>CountMatchesWin(char) > 1
 			call <sid>HighlightMatch(char, a:fwd)
 			let next = getchar()
 			" break on Enter, Esc or Backspace
@@ -237,6 +245,16 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 					let char = substitute(char, '\%(\\\\\|.\)$', '', '')
 				else
 					let char .= <sid>EscapePat(nr2char(next),0)
+				endif
+
+				" Get matches of pattern within the windows viewport
+				let matches = <sid>CountMatchesWin(char)
+
+				if matches == 0
+					" no match within the windows viewport, abort
+					return s:escape
+				elseif matches == 1
+					break
 				endif
 
 				if char =~# '^\%(\\c\)\?\\V$'
