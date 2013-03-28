@@ -156,7 +156,7 @@ endfun
 fun! <sid>CountMatchesWin(pat) "{{{1
 	" Return number of matches of pattern within the current windows viewport
 	" TODO: filter folded lines?
-	let buf = join(getline('w0', 'w$'), '')
+	let buf = join(getline('w0', 'w$'), "\n")
 	return len(split(buf, a:pat.'\zs')) - 1
 endfu
 
