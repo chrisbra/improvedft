@@ -153,10 +153,20 @@ fun! <sid>Unmap(lhs) "{{{1
 	endif
 endfun
 
-fun! <sid>CountMatchesWin(pat) "{{{1
-	" Return number of matches of pattern within the current windows viewport
+fun! <sid>CountMatchesWin(pat, forward) "{{{1
+	" Return number of matches of pattern window start and cursor (backwards)
+	" or cursorline and window end line (forward search)
 	" TODO: filter folded lines?
-	let buf = join(getline('w0', 'w$'), "\n")
+	if a:forward
+		let first = line('.') + 1
+		let last = line('w$')
+		let cursorline = getline('.')[col('.')-1:]
+	else
+		let first = line('w0')
+		let last = line('.')-1
+		let cursorline = matchstr(getline('.'), '^.*\%'.col('.').'c')
+	endif
+	let buf = join(getline(first, last), "\n"). "\n". cursorline
 	return len(split(buf, a:pat.'\zs')) - 1
 endfu
 
@@ -229,7 +239,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			let char = '\c'.char
 		endif
 		if get(g:, "ft_improved_multichars", 0) &&
-				\ <sid>CountMatchesWin(char) > 1
+				\ <sid>CountMatchesWin(char, a:fwd) > 1
 			call <sid>HighlightMatch(char, a:fwd)
 			let next = getchar()
 			" break on Enter, Esc or Backspace
@@ -248,7 +258,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				endif
 
 				" Get matches of pattern within the windows viewport
-				let matches = <sid>CountMatchesWin(char)
+				let matches = <sid>CountMatchesWin(char, a:fwd)
 
 				if matches == 0
 					" no match within the windows viewport, abort
