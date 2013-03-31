@@ -166,8 +166,21 @@ fun! <sid>CountMatchesWin(pat, forward) "{{{1
 		let last = line('.')-1
 		let cursorline = matchstr(getline('.'), '^.*\%'.col('.').'c')
 	endif
-	let buf = join(getline(first, last), "\n"). "\n". cursorline
-	return len(split(buf, a:pat.'\zs')) - 1
+	" Skip folded lines (they are not visible and won't be available for
+	" jumping to.
+	let buf = ''
+	let line = first
+	while line <= last
+		if foldclosed(line) != -1
+			let line = foldclosedend(line) + 1
+			continue
+		endif
+		let buf .= getline(line) . "\n"
+		let line+=1
+	endw
+
+	let buf .= "\n". cursorline
+	return len(split(buf, a:pat.'\zs', 1)) - 1
 endfu
 
 fun! ftimproved#ColonCommand(f, mode) "{{{1
