@@ -92,7 +92,8 @@ fun! <sid>HighlightMatch(char, dir) "{{{1
 		sil! call matchdelete(s:matchid)
 	endif
 	let output=''
-	if !empty(a:char)
+	"if !empty(a:char) && a:char !~# '\%(\\c\)\?\%(\V\)\?$'
+	if !empty(matchstr(a:char, '^\%(\\c\)\?\\V\zs.*$'))
 		let output = matchstr(a:char, '^\%(\\c\)\?\\V\zs.*')
 		" remove escaping for display
 		let output = substitute(output, '\\\\', '\\', 'g')
@@ -108,13 +109,15 @@ fun! <sid>HighlightMatch(char, dir) "{{{1
 			let pat = '\%('. pat. '\m\)\ze\&\%>'.(line('w0')-1).'l'
 		endif
 		let s:matchid = matchadd('IncSearch', pat)
-	endif
-	redraw!
-	" Output input string after(!) redraw.
-	if !empty(output)
-		echohl Title
-		exe ':echon '. string(output)
-		echohl Normal
+		redraw!
+		" Output input string after(!) redraw.
+		if !empty(output)
+			echohl Title
+			exe ':echon '. string(output)
+			echohl Normal
+		endif
+	else
+		redraw! "clear screen"
 	endif
 endfu
 fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
@@ -244,6 +247,8 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		if  char == s:escape
 			" abort when Escape has been hit
 			return char
+		elseif empty(char) || char ==? "\x80\xFD\x60" "CursorHoldEvent"
+			return s:escape
 		endif
 		let char  = <sid>EscapePat(char, 1)
 		" ignore case of pattern? Does only work with search, not with original
@@ -256,15 +261,12 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			call <sid>HighlightMatch(char, a:fwd)
 			let next = getchar()
 			" break on Enter, Esc or Backspace
-			while !empty(next) && ((
+			while !empty(next) && ((next !=? "\x80\xFD\x60" &&
 						\ next != 13 &&
 						\ next != 10 &&
-						\ next != 27) ||
-				\ len(next) == 3 && next[1] == 'k' && next[2] =='b')
-				" There seems to be a bug, when <bs> is pressed, next should be
-				" equal to kb but it isn't,
-				" therefore, this ugly workaround is needed....
-				if (len(next) == 3 && next[1] == 'k' && next[2] =='b') " <BS>
+						\ next != 27) || next == "\<BS>")
+				if next == "\<BS>"
+					" Remove one char
 					let char = substitute(char, '\%(\\\\\|.\)$', '', '')
 				else
 					let char .= <sid>EscapePat(nr2char(next),0)
@@ -295,6 +297,8 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			endw
 			if nr2char(next) == s:escape
 				" abort when Escape has been hit
+				return s:escape
+			elseif empty(next) || next ==? "\x80\xFD\x60" "CursorHold Event"
 				return s:escape
 			endif
 		endif
