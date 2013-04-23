@@ -3,8 +3,7 @@
 " Version:	   0.6
 " Maintainer:  Christian Brabandt <cb@256bit.org>
 " Last Change: Sat, 16 Mar 2013 14:59:42 +0100
-"
-" Script: 
+" Script:  http://www.vim.org/scripts/script.php?script_id=3877
 " Copyright:   (c) 2009 - 2013  by Christian Brabandt
 "			   The VIM LICENSE applies to histwin.vim 
 "			   (see |copyright|) except use "ft_improved.vim" 
@@ -42,6 +41,7 @@ fun! <sid>ReturnOperatorOffset(f_mot, fwd, mode) "{{{1
 	endif
 	return ['', '']
 endfun
+
 fun! <sid>DebugOutput(string) "{{{1
 	if s:debug
 		echo strtrans(a:string)
@@ -56,7 +56,7 @@ fun! <sid>Opposite(char) "{{{1
 endfun
 
 fun! <sid>SearchForChar(char) "{{{1
-	if a:char =~ '[ft]'
+	if a:char =~# '[ft]'
 		return '/'
 	else
 		return '?'
@@ -187,7 +187,7 @@ fun! <sid>CountMatchesWin(pat, forward) "{{{1
 endfu
 
 fun! ftimproved#ColonCommand(f, mode) "{{{1
-	" should be a noop
+	" a:f f/F command, a:mode: map mode
 	if !exists("s:searchforward")
 	    let s:searchforward = 1
 	endif
@@ -217,6 +217,11 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 			if pat[1] =~ '[?/]'
 				let pat[2] = escape(pat[2], pat[1])
 				let res = pat[1] . pat[2] . pat[1]
+			endif
+			if !s:colon['cmd'] " t or T command
+				" increment count, so that the cursor steps over the character
+				" in front of it
+				let res = (v:count1 + 1). res
 			endif
 			if !search(spat, (pat[1]=='?' ? 'b' : '').'nW') || 
 				\ <sid>CheckSearchWrap(spat, pat[1]!='?', v:count1)
