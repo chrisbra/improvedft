@@ -211,17 +211,20 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	endif
 	if res != fcmd
 		try
-			let pat = matchlist(res, '^v\?\([/?]\)\(.*\)\1')
+			let pat = matchlist(res, '^v\?\([/?]\)\(.*\)\1\([bse].\)\?')
 			" ?-search, means, we need to escape '?' in the pattern
 			let spat = pat[2]
 			if pat[1] =~ '[?/]'
 				let pat[2] = escape(pat[2], pat[1])
-				let res = pat[1] . pat[2] . pat[1]
-			endif
-			if !s:colon['cmd'] " t or T command
-				" increment count, so that the cursor steps over the character
-				" in front of it
-				let res = (v:count1 + 1). res
+				if !s:colon['cmd'] && pat[1] == '?' " t or T command
+					" T command
+					let res = pat[1]. '\('. pat[2]. '\m\)\@<=.' . pat[1]
+				elseif !s:colon['cmd']
+					" t command and forward search
+					let res = pat[1]. '.\@>\(' . pat[2]. '\)'. pat[1]
+				else
+					let res = pat[1] . pat[2] . pat[1]
+				endif
 			endif
 			if !search(spat, (pat[1]=='?' ? 'b' : '').'nW') || 
 				\ <sid>CheckSearchWrap(spat, pat[1]!='?', v:count1)
@@ -368,8 +371,10 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			let cmd  = op_off[0].cmd
 			" if match is on previous line the last char, don't add offset
 			if !a:fwd
-				let tline=search(pat, 'bnW')
-				if tline < line('.') && getline(tline) !~ pat.'\$'
+				let pos=searchpos(pat, 'bnW')
+				if ((pos[0] < line('.') &&
+					\ pos[1] != strlen(substitute(getline(pos[0]), '.', 'X', 'g'))) ||
+					\ pos[0] == line('.'))
 					let off .= op_off[1]
 				else
 					let no_offset = 1
