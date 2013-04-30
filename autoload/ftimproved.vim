@@ -398,20 +398,20 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				\ off. (no_offset ? op_off[1] : ''), a:f)
 
 		let pat = pat1
-		call <sid>DebugOutput(res)
 		if v:operator == 'c'
 			let mode = "\<C-\>\<C-O>"
 		else
 			let mode = "\<C-\>\<C-N>"
 		endif
 		let post_cmd = (a:mode == 'o' ? mode : '').
-			\ ":call histdel('/', -1)\<cr>".
+			\ ":\<C-U>call histdel('/', -1)\<cr>".
 			\ (a:mode == 'o' ? mode : '').
-			\ ":let @/='". oldsearchpat. "'\<cr>"
+			\ ":\<C-U>let @/='". oldsearchpat. "'\<cr>"
 
-		" for operator-pending mappings, don't return the post_cmd, it could
-		" end up in insert mode
-		return res.post_cmd
+		" For visual mode, the :Ex commands exit the visual selection, so need
+		" to reselect it
+		call <sid>DebugOutput(res.post_cmd. (a:mode ==? 'x' ? 'gv' : ''))
+		return res.post_cmd. (a:mode ==? 'x' ? 'gv' : '')
 		"return res. ":let @/='".oldsearchpat."'\n"
 	finally 
 		call <sid>HighlightMatch('', a:fwd)
