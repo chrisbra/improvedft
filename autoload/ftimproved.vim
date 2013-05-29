@@ -17,7 +17,7 @@ let s:cpo= &cpo
 set cpo&vim
 
 " Debug Mode:
-let s:debug = 0
+let s:debug = 1
 
 let s:escape = "\e"
 
@@ -398,15 +398,21 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				\ off. (no_offset ? op_off[1] : ''), a:f)
 
 		let pat = pat1
-		if v:operator == 'c'
-			let mode = "\<C-\>\<C-O>"
-		else
-			let mode = "\<C-\>\<C-N>"
+		let post_cmd = ''
+		" If operator is c, don't switch to normal mode after the
+		" command, else we would lose the repeatability using '.'
+		" (e.g. cf,foobar<esc> is not repeatable anymore)
+		if a:mode != 'o' && v:operator != 'c'
+		    if v:operator != 'c'
+			    let mode = "\<C-\>\<C-O>"
+		    else
+			    let mode = "\<C-\>\<C-N>"
+		    endif
+		    let post_cmd = (a:mode == 'o' ? mode : '').
+			    \ ":\<C-U>call histdel('/', -1)\<cr>".
+			    \ (a:mode == 'o' ? mode : '').
+			    \ ":\<C-U>let @/='". oldsearchpat. "'\<cr>"
 		endif
-		let post_cmd = (a:mode == 'o' ? mode : '').
-			\ ":\<C-U>call histdel('/', -1)\<cr>".
-			\ (a:mode == 'o' ? mode : '').
-			\ ":\<C-U>let @/='". oldsearchpat. "'\<cr>"
 
 		" For visual mode, the :Ex commands exit the visual selection, so need
 		" to reselect it
