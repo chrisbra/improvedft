@@ -403,7 +403,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		" command, else we would lose the repeatability using '.'
 		" (e.g. cf,foobar<esc> is not repeatable anymore)
 		if a:mode != 'o' && v:operator != 'c'
-		    if v:operator != 'c'
+		    if v:operator == 'c'
 			    let mode = "\<C-\>\<C-O>"
 		    else
 			    let mode = "\<C-\>\<C-N>"
