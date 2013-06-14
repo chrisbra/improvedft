@@ -416,7 +416,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 		" For visual mode, the :Ex commands exit the visual selection, so need
 		" to reselect it
-		call <sid>DebugOutput(res.post_cmd. (a:mode ==? 'x' ? 'gv' : ''))
+		call <sid>DebugOutput(res.post_cmd. ((a:mode ==? 'x' && mode() !~ '[vV]') ? 'gv' : ''))
 		return res.post_cmd. (a:mode ==? 'x' ? 'gv' : '')
 		"return res. ":let @/='".oldsearchpat."'\n"
 	finally 
