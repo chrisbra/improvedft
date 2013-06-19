@@ -118,7 +118,9 @@ To disable either |unlet| that variable, or set it to zero.
 
 If you have enabled it this way, you need to press enter, after having entered
 the characters to search for, so that the plugin knows, when not to wait for more
-characters and to start searching.
+characters and to start searching. Alternatively, if the entered characters
+precisely only match one position in the current screen (excluding folds), it
+will simply drop you there.
 
 Note: This is highly experimental and basically turns your |f| |F| |t| |T| |,|
 |;| keys to use a literal search function.
@@ -146,6 +148,9 @@ third line of this document.
 
 ==============================================================================
 4. History                                              *improvedft-history*
+
+0.7: (unreleased) "{{{1
+- small bugfixes
 
 0.6: Mar 16, 2013 "{{{1
 - |improvedft-multichars|

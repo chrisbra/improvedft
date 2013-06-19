@@ -49,14 +49,13 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-438
+514
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.6
 " Maintainer:  Christian Brabandt <cb@256bit.org>
 " Last Change: Sat, 16 Mar 2013 14:59:42 +0100
-"
-" Script: 
+" Script:  http://www.vim.org/scripts/script.php?script_id=3877
 " Copyright:   (c) 2009 - 2013  by Christian Brabandt
 "			   The VIM LICENSE applies to histwin.vim 
 "			   (see |copyright|) except use "ft_improved.vim" 
@@ -70,7 +69,7 @@ let s:cpo= &cpo
 set cpo&vim
 
 " Debug Mode:
-let s:debug = 0
+let s:debug = 1
 
 let s:escape = "\e"
 
@@ -94,6 +93,7 @@ fun! <sid>ReturnOperatorOffset(f_mot, fwd, mode) "{{{1
 	endif
 	return ['', '']
 endfun
+
 fun! <sid>DebugOutput(string) "{{{1
 	if s:debug
 		echo strtrans(a:string)
@@ -108,7 +108,7 @@ fun! <sid>Opposite(char) "{{{1
 endfun
 
 fun! <sid>SearchForChar(char) "{{{1
-	if a:char =~ '[ft]'
+	if a:char =~# '[ft]'
 		return '/'
 	else
 		return '?'
@@ -144,23 +144,32 @@ fun! <sid>HighlightMatch(char, dir) "{{{1
 		sil! call matchdelete(s:matchid)
 	endif
 	let output=''
-	if !empty(a:char)
+	"if !empty(a:char) && a:char !~# '\%(\\c\)\?\%(\V\)\?$'
+	if !empty(matchstr(a:char, '^\%(\\c\)\?\\V\zs.*$'))
 		let output = matchstr(a:char, '^\%(\\c\)\?\\V\zs.*')
+		" remove escaping for display
+		let output = substitute(output, '\\\\', '\\', 'g')
 		if a:dir
 			let pat = '\%(\%>'. col('.'). 'c\&\%'. line('.'). 'l'
 			let pat .= '\|\%>'. line('.'). 'l\)'. a:char
+			" Make sure, it only matches within the current viewport
+			let pat = '\%('. pat. '\m\)\ze\&\%<'.(line('w$')+1).'l'
 		else
 			let pat = '\%(\%<'. col('.'). 'c\&\%'. line('.'). 'l'
 			let pat .= '\|\%<'. line('.'). 'l\)'. a:char
+			" Make sure, it only matches within the current viewport
+			let pat = '\%('. pat. '\m\)\ze\&\%>'.(line('w0')-1).'l'
 		endif
 		let s:matchid = matchadd('IncSearch', pat)
-	endif
-	redraw!
-	" Output input string after(!) redraw.
-	if !empty(output)
-		echohl Title
-		exe ':echon '. string(output)
-		echohl Normal
+		redraw!
+		" Output input string after(!) redraw.
+		if !empty(output)
+			echohl Title
+			exe ':echon '. string(output)
+			echohl Normal
+		endif
+	else
+		redraw! "clear screen"
 	endif
 endfu
 fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
@@ -199,8 +208,38 @@ fun! <sid>Unmap(lhs) "{{{1
 	endif
 endfun
 
+fun! <sid>CountMatchesWin(pat, forward) "{{{1
+	" Return number of matches of pattern window start and cursor (backwards)
+	" or cursorline and window end line (forward search)
+	" TODO: filter folded lines?
+	if a:forward
+		let first = line('.') + 1
+		let last = line('w$')
+		let cursorline = getline('.')[col('.')-1:]
+	else
+		let first = line('w0')
+		let last = line('.')-1
+		let cursorline = matchstr(getline('.'), '^.*\%'.col('.').'c')
+	endif
+	" Skip folded lines (they are not visible and won't be available for
+	" jumping to.
+	let buf = ''
+	let line = first
+	while line <= last
+		if foldclosed(line) != -1
+			let line = foldclosedend(line) + 1
+			continue
+		endif
+		let buf .= getline(line) . "\n"
+		let line+=1
+	endw
+
+	let buf .= "\n". cursorline
+	return len(split(buf, a:pat.'\zs', 1)) - 1
+endfu
+
 fun! ftimproved#ColonCommand(f, mode) "{{{1
-	" should be a noop
+	" a:f f/F command, a:mode: map mode
 	if !exists("s:searchforward")
 	    let s:searchforward = 1
 	endif
@@ -224,12 +263,20 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	endif
 	if res != fcmd
 		try
-			let pat = matchlist(res, '^v\?\([/?]\)\(.*\)\1')
+			let pat = matchlist(res, '^v\?\([/?]\)\(.*\)\1\([bse].\)\?')
 			" ?-search, means, we need to escape '?' in the pattern
 			let spat = pat[2]
 			if pat[1] =~ '[?/]'
 				let pat[2] = escape(pat[2], pat[1])
-				let res = pat[1] . pat[2] . pat[1]
+				if !s:colon['cmd'] && pat[1] == '?' " t or T command
+					" T command
+					let res = pat[1]. '\('. pat[2]. '\m\)\@<=.' . pat[1]
+				elseif !s:colon['cmd']
+					" t command and forward search
+					let res = pat[1]. '.\@>\(' . pat[2]. '\)'. pat[1]
+				else
+					let res = pat[1] . pat[2] . pat[1]
+				endif
 			endif
 			if !search(spat, (pat[1]=='?' ? 'b' : '').'nW') || 
 				\ <sid>CheckSearchWrap(spat, pat[1]!='?', v:count1)
@@ -260,25 +307,40 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		if  char == s:escape
 			" abort when Escape has been hit
 			return char
+		elseif empty(char) || char ==? "\x80\xFD\x60" "CursorHoldEvent"
+			return s:escape
 		endif
+		let orig_char = char
 		let char  = <sid>EscapePat(char, 1)
 		" ignore case of pattern? Does only work with search, not with original
 		" f/F/t/T commands
-		if !get(g:, "ft_improved_ignorecase", 0)
+		if get(g:, "ft_improved_ignorecase", 0)
 			let char = '\c'.char
 		endif
-		if get(g:, "ft_improved_multichars", 0)
+		if get(g:, "ft_improved_multichars", 0) &&
+				\ <sid>CountMatchesWin(char, a:fwd) > 1
 			call <sid>HighlightMatch(char, a:fwd)
 			let next = getchar()
-			while !empty(next) && ( next >= 0x20 ||
-				\ ( len(next) == 3 && next[1] == 'k' && next[2] =='b'))
-				" There seems to be a bug, when <bs> is pressed, next should be
-				" equal to kb but it isn't,
-				" therefore, this ugly workaround is needed....
-				if (len(next) == 3 && next[1] == 'k' && next[2] =='b') " <BS>
+			" break on Enter, Esc or Backspace
+			while !empty(next) && ((next !=? "\x80\xFD\x60" &&
+						\ next != 13 &&
+						\ next != 10 &&
+						\ next != 27) || next == "\<BS>")
+				if next == "\<BS>"
+					" Remove one char
 					let char = substitute(char, '\%(\\\\\|.\)$', '', '')
 				else
 					let char .= <sid>EscapePat(nr2char(next),0)
+				endif
+
+				" Get matches of pattern within the windows viewport
+				let matches = <sid>CountMatchesWin(char, a:fwd)
+
+				if matches == 0
+					" no match within the windows viewport, abort
+					return s:escape
+				elseif matches == 1
+					break
 				endif
 
 				if char =~# '^\%(\\c\)\?\\V$'
@@ -297,6 +359,8 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			if nr2char(next) == s:escape
 				" abort when Escape has been hit
 				return s:escape
+			elseif empty(next) || next ==? "\x80\xFD\x60" "CursorHold Event"
+				return s:escape
 			endif
 		endif
 		let oldsearchpat = @/
@@ -305,19 +369,21 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		let pat = char
 		if !get(g:, "ft_improved_multichars", 0)
 		" Check if normal f/t commands would work:
-			if search(pat, 'nW') == line('.') && a:fwd
+			if search(matchstr(pat.'\C', '^\%(\\c\)\?\zs.*'), 'nW') == line('.')
+				\ && a:fwd
 				let s:searchforward = 1
 				let cmd = (a:f ? 'f' : 't')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
 						\ pat, '', a:f)
-				return cmd.char
+				return cmd.orig_char
 
-			elseif search(pat, 'bnw') == line('.') && !a:fwd
+			elseif search(matchstr(pat.'\C', '^\%(\\c\)\?\zs.*'), 'bnW') == line('.')
+				\ && !a:fwd
 				let s:searchforward = 0
 				let cmd = (a:f ? 'F' : 'T')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
 						\ pat, '', a:f)
-				return cmd. char
+				return cmd.orig_char
 			endif
 		endif
 
@@ -353,15 +419,17 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			"endif
 			let cmd  = op_off[0].cmd
 			let off .= op_off[1]
-			let pat1  = (a:fwd ? pat : escape(pat, '?'))
+			let pat1  = (a:fwd ? escape(pat, '/') : escape(pat, '?'))
 			let res  = cmd.pat1.off."\<cr>"
 		else
 			" Searching using 't' command
 			let cmd  = op_off[0].cmd
 			" if match is on previous line the last char, don't add offset
 			if !a:fwd
-				let tline=search(pat, 'bnW')
-				if tline < line('.') && getline(tline) !~ pat.'\$'
+				let pos=searchpos(pat, 'bnW')
+				if ((pos[0] < line('.') &&
+					\ pos[1] != strlen(substitute(getline(pos[0]), '.', 'X', 'g'))) ||
+					\ pos[0] == line('.'))
 					let off .= op_off[1]
 				else
 					let no_offset = 1
@@ -377,26 +445,34 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		if <sid>CheckSearchWrap(pat, a:fwd, cnt)
 			let res = s:escape
 		endif
+		" handle 'cedit' key gracefully
+		let res = substitute(res, &cedit, ''.&cedit, '')
 
 		" save pattern for ';' and ','
 		call <sid>ColonPattern(cmd, pat,
 				\ off. (no_offset ? op_off[1] : ''), a:f)
 
 		let pat = pat1
-		call <sid>DebugOutput(res)
-		if v:operator == 'c'
-			let mode = "\<C-\>\<C-O>"
-		else
-			let mode = "\<C-\>\<C-N>"
+		let post_cmd = ''
+		" If operator is c, don't switch to normal mode after the
+		" command, else we would lose the repeatability using '.'
+		" (e.g. cf,foobar<esc> is not repeatable anymore)
+		if a:mode != 'o' && v:operator != 'c'
+		    if v:operator == 'c'
+			    let mode = "\<C-\>\<C-O>"
+		    else
+			    let mode = "\<C-\>\<C-N>"
+		    endif
+		    let post_cmd = (a:mode == 'o' ? mode : '').
+			    \ ":\<C-U>call histdel('/', -1)\<cr>".
+			    \ (a:mode == 'o' ? mode : '').
+			    \ ":\<C-U>let @/='". oldsearchpat. "'\<cr>"
 		endif
-		let post_cmd = (a:mode == 'o' ? mode : '').
-			\ ":call histdel('/', -1)\<cr>".
-			\ (a:mode == 'o' ? mode : '').
-			\ ":let @/='". oldsearchpat. "'\<cr>"
 
-		" for operator-pending mappings, don't return the post_cmd, it could
-		" end up in insert mode
-		return res.post_cmd
+		" For visual mode, the :Ex commands exit the visual selection, so need
+		" to reselect it
+		call <sid>DebugOutput(res.post_cmd. ((a:mode ==? 'x' && mode() !~ '[vV]') ? 'gv' : ''))
+		return res.post_cmd. (a:mode ==? 'x' ? 'gv' : '')
 		"return res. ":let @/='".oldsearchpat."'\n"
 	finally 
 		call <sid>HighlightMatch('', a:fwd)
@@ -489,7 +565,7 @@ unlet s:cpo
 " Modeline {{{1
 " vim: ts=4 sts=4 fdm=marker com+=l\:\" fdl=0
 doc/ft_improved.txt	[[[1
-178
+183
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
@@ -610,7 +686,9 @@ To disable either |unlet| that variable, or set it to zero.
 
 If you have enabled it this way, you need to press enter, after having entered
 the characters to search for, so that the plugin knows, when not to wait for more
-characters and to start searching.
+characters and to start searching. Alternatively, if the entered characters
+precisely only match one position in the current screen (excluding folds), it
+will simply drop you there.
 
 Note: This is highly experimental and basically turns your |f| |F| |t| |T| |,|
 |;| keys to use a literal search function.
@@ -638,6 +716,9 @@ third line of this document.
 
 ==============================================================================
 4. History                                              *improvedft-history*
+
+0.7: (unreleased) "{{{1
+- small bugfixes
 
 0.6: Mar 16, 2013 "{{{1
 - |improvedft-multichars|

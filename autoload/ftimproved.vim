@@ -258,10 +258,11 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		elseif empty(char) || char ==? "\x80\xFD\x60" "CursorHoldEvent"
 			return s:escape
 		endif
+		let orig_char = char
 		let char  = <sid>EscapePat(char, 1)
 		" ignore case of pattern? Does only work with search, not with original
 		" f/F/t/T commands
-		if !get(g:, "ft_improved_ignorecase", 0)
+		if get(g:, "ft_improved_ignorecase", 0)
 			let char = '\c'.char
 		endif
 		if get(g:, "ft_improved_multichars", 0) &&
@@ -316,19 +317,21 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		let pat = char
 		if !get(g:, "ft_improved_multichars", 0)
 		" Check if normal f/t commands would work:
-			if search(pat, 'nW') == line('.') && a:fwd
+			if search(matchstr(pat.'\C', '^\%(\\c\)\?\zs.*'), 'nW') == line('.')
+				\ && a:fwd
 				let s:searchforward = 1
 				let cmd = (a:f ? 'f' : 't')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
 						\ pat, '', a:f)
-				return cmd.char
+				return cmd.orig_char
 
-			elseif search(pat, 'bnw') == line('.') && !a:fwd
+			elseif search(matchstr(pat.'\C', '^\%(\\c\)\?\zs.*'), 'bnW') == line('.')
+				\ && !a:fwd
 				let s:searchforward = 0
 				let cmd = (a:f ? 'F' : 'T')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
 						\ pat, '', a:f)
-				return cmd. char
+				return cmd.orig_char
 			endif
 		endif
 
