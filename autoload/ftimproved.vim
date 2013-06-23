@@ -67,7 +67,7 @@ fun! <sid>EscapePat(pat, vmagic) "{{{1
 	return (a:vmagic ? '\V' : '').escape(a:pat, '\''')
 endfun
 
-fun! <sid>ColonPattern(cmd, pat, off, f) "{{{1
+fun! <sid>ColonPattern(cmd, pat, off, f, fwd) "{{{1
 	if !exists("s:colon")
 		let s:colon = {}
 	endif
@@ -80,10 +80,17 @@ fun! <sid>ColonPattern(cmd, pat, off, f) "{{{1
 	elseif a:cmd == 'F'
 		let cmd = '?'
 	endif
-	let s:colon[';'] = cmd[-1:]. pat. 
-		\ (empty(a:off) ? cmd[-1:] : a:off)
-	let s:colon[','] = cmd[:-2]. opp. pat.
-	    \ (empty(a:off) ? opp : opp_off . a:off[1])
+	if a:fwd
+		let s:colon[';'] = cmd[-1:]. pat. 
+			\ (empty(a:off) ? cmd[-1:] : a:off)
+		let s:colon[','] = cmd[:-2]. opp. pat.
+			\ (empty(a:off) ? opp : opp_off . a:off[1])
+	else
+		let s:colon[','] = cmd[-1:]. pat. 
+			\ (empty(a:off) ? cmd[-1:] : a:off)
+		let s:colon[';'] = cmd[:-2]. opp. pat.
+			\ (empty(a:off) ? opp : opp_off . a:off[1])
+	endif
 	let s:colon['cmd'] = a:f
 endfun
 
@@ -253,6 +260,9 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 endfun
 
 fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
+	" f: its an f-command
+	" fwd: forward motion
+	" mode: mapping mode
 	try
 		let char = nr2char(getchar())
 		if  char == s:escape
@@ -325,7 +335,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				let s:searchforward = 1
 				let cmd = (a:f ? 'f' : 't')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
-						\ pat, '', a:f)
+						\ pat, '', a:f, a:fwd)
 				return cmd.orig_char
 
 			elseif search(matchstr(pat.'\C', '^\%(\\c\)\?\zs.*'), 'bnW') == line('.')
@@ -333,7 +343,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				let s:searchforward = 0
 				let cmd = (a:f ? 'F' : 'T')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
-						\ pat, '', a:f)
+						\ pat, '', a:f, a:fwd)
 				return cmd.orig_char
 			endif
 		endif
@@ -343,7 +353,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			\  (search(pat, 'bnW') == 0 && !a:fwd)
 			" return ESC
 			call <sid>ColonPattern(<sid>SearchForChar(cmd),
-					\ pat, '', a:f)
+					\ pat, '', a:f, a:fwd)
 			return s:escape
 		endif
 
@@ -401,7 +411,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 		" save pattern for ';' and ','
 		call <sid>ColonPattern(cmd, pat,
-				\ off. (no_offset ? op_off[1] : ''), a:f)
+				\ off. (no_offset ? op_off[1] : ''), a:f, a:fwd)
 
 		let pat = pat1
 		let post_cmd = ''
