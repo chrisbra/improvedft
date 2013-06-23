@@ -5,7 +5,7 @@
 " Last Change: Sat, 16 Mar 2013 14:59:42 +0100
 " Script:  http://www.vim.org/scripts/script.php?script_id=3877
 " Copyright:   (c) 2009 - 2013  by Christian Brabandt
-"			   The VIM LICENSE applies to histwin.vim 
+"			   The VIM LICENSE applies to ft_improved.vim 
 "			   (see |copyright|) except use "ft_improved.vim" 
 "			   instead of "Vim".
 "			   No warranty, express or implied.
@@ -64,7 +64,7 @@ fun! <sid>SearchForChar(char) "{{{1
 endfun
 
 fun! <sid>EscapePat(pat, vmagic) "{{{1
-	return (a:vmagic ? '\V' : '').escape(a:pat, '\')
+	return (a:vmagic ? '\V' : '').escape(a:pat, '\''')
 endfun
 
 fun! <sid>ColonPattern(cmd, pat, off, f) "{{{1
@@ -88,6 +88,9 @@ fun! <sid>ColonPattern(cmd, pat, off, f) "{{{1
 endfun
 
 fun! <sid>HighlightMatch(char, dir) "{{{1
+	if get(g:, 'ft_improved_nohighlight', 0)
+		return
+	endif
 	if exists("s:matchid")
 		sil! call matchdelete(s:matchid)
 	endif
