@@ -1,13 +1,12 @@
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
-Version: 0.6 Sat, 16 Mar 2013 14:59:42 +0100
+Version: 0.7 Wed, 14 Aug 2013 22:33:14 +0200
 
-Copyright: (c) 2009, 2010, 2011, 2012 by Christian Brabandt
+Copyright: (c) 2009-2013 by Christian Brabandt
            The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
            (see |copyright|) except use improved_ft instead of "Vim".
            NO WARRANTY, EXPRESS OR IMPLIED.  USE AT-YOUR-OWN-RISK.
-
 
 ==============================================================================
 1. Contents                                                  *improvedft-ft*
@@ -149,8 +148,11 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
-0.7: (unreleased) "{{{1
+0.7: Aug 14, 2013 "{{{1
 - small bugfixes
+- correctly handle ignorecase setting |improvedft-ignorecase|
+- escape '
+- make ; work correctly when using backwards motion.
 
 0.6: Mar 16, 2013 "{{{1
 - |improvedft-multichars|
@@ -158,7 +160,7 @@ third line of this document.
 
 0.5: Feb 16, 2013 "{{{1
 - ignorecase when searching, when g:ft_improved_ignorecase is set
-  
+
 0.4: Sep 09, 2012 "{{{1
 - special handling of pattern / and ?
 
