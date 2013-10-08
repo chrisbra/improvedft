@@ -64,7 +64,17 @@ fun! <sid>SearchForChar(char) "{{{1
 endfun
 
 fun! <sid>EscapePat(pat, vmagic) "{{{1
-	return (a:vmagic ? '\V' : '').escape(a:pat, '\''')
+	let pat = escape(a:pat, '\''')
+	if pat ==# ''
+		let pat = '\r'
+	elseif pat ==# '	'
+		let pat = '\t'
+	" elseif pat ==# ''  " Will be skipped anyhow
+	"	let pat = '\e'
+	"
+	" TODO: Other characters to take care of?
+	endif
+	return (a:vmagic ? '\V' : '').pat
 endfun
 
 fun! <sid>ColonPattern(cmd, pat, off, f, fwd) "{{{1

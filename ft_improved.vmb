@@ -49,7 +49,7 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-527
+535
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.7
@@ -116,7 +116,15 @@ fun! <sid>SearchForChar(char) "{{{1
 endfun
 
 fun! <sid>EscapePat(pat, vmagic) "{{{1
-	return (a:vmagic ? '\V' : '').escape(a:pat, '\''')
+	let pat = escape(a:pat, '\''')
+	if pat ==# ''
+		let pat = '\r'
+	elseif pat ==# '	'
+		let pat = '\t'
+	elseif pat ==# ''
+		let pat = '\e'
+	endif
+	return (a:vmagic ? '\V' : '').pat
 endfun
 
 fun! <sid>ColonPattern(cmd, pat, off, f, fwd) "{{{1
@@ -163,12 +171,12 @@ fun! <sid>HighlightMatch(char, dir) "{{{1
 			let pat = '\%(\%>'. col('.'). 'c\&\%'. line('.'). 'l'
 			let pat .= '\|\%>'. line('.'). 'l\)'. a:char
 			" Make sure, it only matches within the current viewport
-			let pat = '\%('. pat. '\m\)\ze\&\%<'.(line('w$')+1).'l'
+			let pat = '\%('. pat. '\m\)\ze\&\%<'.(line('w$')+1).'l'.a:char
 		else
 			let pat = '\%(\%<'. col('.'). 'c\&\%'. line('.'). 'l'
 			let pat .= '\|\%<'. line('.'). 'l\)'. a:char
 			" Make sure, it only matches within the current viewport
-			let pat = '\%('. pat. '\m\)\ze\&\%>'.(line('w0')-1).'l'
+			let pat = '\%('. pat. '\m\)\ze\&\%>'.(line('w0')-1).'l'.a:char
 		endif
 		let s:matchid = matchadd('IncSearch', pat)
 		redraw!
