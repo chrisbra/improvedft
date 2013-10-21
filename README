@@ -148,6 +148,9 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
+0.8: (unreleased) "{{{1
+- handle keys like <Enter>, <Tab> literally
+
 0.7: Aug 14, 2013 "{{{1
 - small bugfixes
 - correctly handle ignorecase setting |improvedft-ignorecase|

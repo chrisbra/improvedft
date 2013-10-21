@@ -49,7 +49,7 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-535
+537
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.7
@@ -121,8 +121,10 @@ fun! <sid>EscapePat(pat, vmagic) "{{{1
 		let pat = '\r'
 	elseif pat ==# '	'
 		let pat = '\t'
-	elseif pat ==# ''
-		let pat = '\e'
+	" elseif pat ==# ''  " Will be skipped anyhow
+	"	let pat = '\e'
+	"
+	" TODO: Other characters to take care of?
 	endif
 	return (a:vmagic ? '\V' : '').pat
 endfun
@@ -459,7 +461,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				let off .= op_off[1]
 			endif
 
-			let pat1 = (a:fwd ? pat : escape(pat, '?'))
+			let pat1 = (a:fwd ? escape(pat, '/') : escape(pat, '?'))
 			let res = cmd.pat1.off."\<cr>"
 		endif
 
@@ -586,7 +588,7 @@ unlet s:cpo
 " Modeline {{{1
 " vim: ts=4 sts=4 fdm=marker com+=l\:\" fdl=0
 doc/ft_improved.txt	[[[1
-185
+188
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
@@ -736,6 +738,9 @@ third line of this document.
 
 ==============================================================================
 4. History                                              *improvedft-history*
+
+0.8: (unreleased) "{{{1
+- handle keys like <Enter>, <Tab> literally
 
 0.7: Aug 14, 2013 "{{{1
 - small bugfixes

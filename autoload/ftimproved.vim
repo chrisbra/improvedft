@@ -409,7 +409,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				let off .= op_off[1]
 			endif
 
-			let pat1 = (a:fwd ? pat : escape(pat, '?'))
+			let pat1 = (a:fwd ? escape(pat, '/') : escape(pat, '?'))
 			let res = cmd.pat1.off."\<cr>"
 		endif
 

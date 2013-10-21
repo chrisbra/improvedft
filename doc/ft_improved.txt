@@ -150,6 +150,7 @@ third line of this document.
 
 0.8: (unreleased) "{{{1
 - handle keys like <Enter>, <Tab> literally
+- escape '/' correctly for |t| commands.
 
 0.7: Aug 14, 2013 "{{{1
 - small bugfixes
