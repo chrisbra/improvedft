@@ -1,7 +1,7 @@
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
-Version: 0.7 Wed, 14 Aug 2013 22:33:14 +0200
+Version: 0.8 Thu, 27 Mar 2014 23:22:01 +0100
 
 Copyright: (c) 2009-2013 by Christian Brabandt
            The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
@@ -148,8 +148,9 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
-0.8: (unreleased) "{{{1
+0.8: Mar 27, 2014 "{{{1
 - handle keys like <Enter>, <Tab> literally
+- escape '/' correctly for |t| commands.
 
 0.7: Aug 14, 2013 "{{{1
 - small bugfixes

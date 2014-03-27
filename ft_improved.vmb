@@ -5,9 +5,9 @@ plugin/ft_improved.vim	[[[1
 45
 " ft_improved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.7
+" Version:	   0.8
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Wed, 14 Aug 2013 22:33:14 +0200
+" Last Change: Thu, 27 Mar 2014 23:22:01 +0100
 "
 " Script: 
 " Copyright:   (c) 2009, 2010, 2011, 2012  by Christian Brabandt
@@ -16,7 +16,7 @@ plugin/ft_improved.vim	[[[1
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 7 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 8 :AutoInstall: ft_improved.vim
 "
 " Init: {{{1
 let s:cpo= &cpo
@@ -52,9 +52,9 @@ autoload/ftimproved.vim	[[[1
 537
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.7
+" Version:	   0.8
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Wed, 14 Aug 2013 22:33:14 +0200
+" Last Change: Thu, 27 Mar 2014 23:22:01 +0100
 " Script:  http://www.vim.org/scripts/script.php?script_id=3877
 " Copyright:   (c) 2009 - 2013  by Christian Brabandt
 "			   The VIM LICENSE applies to ft_improved.vim 
@@ -62,7 +62,7 @@ autoload/ftimproved.vim	[[[1
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 7 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 8 :AutoInstall: ft_improved.vim
 "
 " Functions:
 let s:cpo= &cpo
@@ -588,11 +588,11 @@ unlet s:cpo
 " Modeline {{{1
 " vim: ts=4 sts=4 fdm=marker com+=l\:\" fdl=0
 doc/ft_improved.txt	[[[1
-188
+189
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
-Version: 0.7 Wed, 14 Aug 2013 22:33:14 +0200
+Version: 0.8 Thu, 27 Mar 2014 23:22:01 +0100
 
 Copyright: (c) 2009-2013 by Christian Brabandt
            The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
@@ -739,8 +739,9 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
-0.8: (unreleased) "{{{1
+0.8: Mar 27, 2014 "{{{1
 - handle keys like <Enter>, <Tab> literally
+- escape '/' correctly for |t| commands.
 
 0.7: Aug 14, 2013 "{{{1
 - small bugfixes
