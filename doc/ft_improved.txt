@@ -112,6 +112,7 @@ To enable this, simply set this variable in your |.vimrc| >
     :let g:ft_improved_multichars = 1
 <
 As you type, the matching positions will be highlighted.
+(Set g:ft_improved_nohighlight = 1 if you don't want the highlighting).
 
 To disable either |unlet| that variable, or set it to zero.
 
