@@ -44,7 +44,7 @@ endfun
 
 fun! <sid>DebugOutput(string) "{{{1
 	if s:debug
-		echo strtrans(a:string)
+		echom strtrans(a:string)
 	endif
 endfun
 fun! <sid>Opposite(char) "{{{1
@@ -224,6 +224,7 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	endif
 	let res = ''
 	let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
+	let oldsearchpat = @/
 	if a:mode =~ 'o' &&
 		\ s:colon['cmd'] " last search was 'f' command
 		" operator pending. For f cmd, make sure the motion is inclusive
@@ -265,6 +266,10 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	endif
 	" Ctrl-C should be a noop
 	let res = (empty(res) ? s:escape : res."\n")
+	if a:mode != 'o' && v:operator != 'c'
+		let res .= ":\<C-U>call histdel('/', -1)\<cr>".
+			\ ":\<C-U>let @/='". oldsearchpat. "'\<cr>"
+	endif
 	call <sid>DebugOutput(res)
 	return res
 endfun
