@@ -434,14 +434,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		" command, else we would lose the repeatability using '.'
 		" (e.g. cf,foobar<esc> is not repeatable anymore)
 		if a:mode != 'o' && v:operator != 'c'
-		    if v:operator == 'c'
-			    let mode = "\<C-\>\<C-O>"
-		    else
-			    let mode = "\<C-\>\<C-N>"
-		    endif
-		    let post_cmd = (a:mode == 'o' ? mode : '').
-			    \ ":\<C-U>call histdel('/', -1)\<cr>".
-			    \ (a:mode == 'o' ? mode : '').
+		    let post_cmd =  ":\<C-U>call histdel('/', -1)\<cr>".
 			    \ ":\<C-U>let @/='". oldsearchpat. "'\<cr>"
 		endif
 
@@ -449,7 +442,6 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		" to reselect it
 		call <sid>DebugOutput(res.post_cmd. ((a:mode ==? 'x' && mode() !~ '[vV]') ? 'gv' : ''))
 		return res.post_cmd. (a:mode ==? 'x' ? 'gv' : '')
-		"return res. ":let @/='".oldsearchpat."'\n"
 	finally 
 		call <sid>HighlightMatch('', a:fwd)
 	endtry
