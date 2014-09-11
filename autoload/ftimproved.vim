@@ -120,6 +120,9 @@ fun! <sid>HighlightMatch(char, dir) "{{{1
 		let output = substitute(output, '\\\\', '\\', 'g')
 		let pos    = [line('.'), col('.')]
 		if a:dir
+			" If a count has been given, first move to the count'th match and
+			" then highlight all matches after that (the count works only for
+			" the first entered char
 			while s:count > 1
 				" skip that many matches
 				let pos = searchpos(a:char, 'eW')
