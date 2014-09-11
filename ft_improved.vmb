@@ -49,7 +49,7 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-537
+548
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.8
@@ -96,8 +96,9 @@ endfun
 
 fun! <sid>DebugOutput(string) "{{{1
 	if s:debug
-		echo strtrans(a:string)
+		echom strtrans(a:string)
 	endif
+	return a:string
 endfun
 fun! <sid>Opposite(char) "{{{1
 	if a:char == '/' || a:char =~ '[ft]'
@@ -169,14 +170,25 @@ fun! <sid>HighlightMatch(char, dir) "{{{1
 		let output = matchstr(a:char, '^\%(\\c\)\?\\V\zs.*')
 		" remove escaping for display
 		let output = substitute(output, '\\\\', '\\', 'g')
+		let pos    = [line('.'), col('.')]
 		if a:dir
-			let pat = '\%(\%>'. col('.'). 'c\&\%'. line('.'). 'l'
-			let pat .= '\|\%>'. line('.'). 'l\)'. a:char
+			while s:count > 1
+				" skip that many matches
+				let pos = searchpos(a:char, 'eW')
+				let s:count -= 1
+			endw
+
+			let pat = '\%(\%>'. pos[1]. 'c\&\%'. pos[0]. 'l'
+			let pat .= '\|\%>'. pos[0]. 'l\)'. a:char
 			" Make sure, it only matches within the current viewport
 			let pat = '\%('. pat. '\m\)\ze\&\%<'.(line('w$')+1).'l'.a:char
 		else
-			let pat = '\%(\%<'. col('.'). 'c\&\%'. line('.'). 'l'
-			let pat .= '\|\%<'. line('.'). 'l\)'. a:char
+			while s:count > 1
+				let pos = searchpos(a:char, 'bW')
+				let s:count -= 1
+			endw
+			let pat = '\%(\%<'. pos[1]. 'c\&\%'. pos[0]. 'l'
+			let pat .= '\|\%<'. pos[0]. 'l\)'. a:char
 			" Make sure, it only matches within the current viewport
 			let pat = '\%('. pat. '\m\)\ze\&\%>'.(line('w0')-1).'l'.a:char
 		endif
@@ -276,6 +288,7 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	endif
 	let res = ''
 	let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
+	let oldsearchpat = @/
 	if a:mode =~ 'o' &&
 		\ s:colon['cmd'] " last search was 'f' command
 		" operator pending. For f cmd, make sure the motion is inclusive
@@ -317,8 +330,11 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	endif
 	" Ctrl-C should be a noop
 	let res = (empty(res) ? s:escape : res."\n")
-	call <sid>DebugOutput(res)
-	return res
+	if a:mode != 'o' && v:operator != 'c'
+		let res .= ":\<C-U>call histdel('/', -1)\<cr>".
+			\ ":\<C-U>let @/='". oldsearchpat. "'\<cr>"
+	endif
+	return <sid>DebugOutput(res)
 endfun
 
 fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
@@ -329,10 +345,14 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		let char = nr2char(getchar())
 		if  char == s:escape
 			" abort when Escape has been hit
-			return char
+			return <sid>DebugOutput(char)
 		elseif empty(char) || char ==? "\x80\xFD\x60" "CursorHoldEvent"
-			return s:escape
+			return <sid>DebugOutput(s:escape)
 		endif
+		" Use a script local var, so that you can use 3fi (and afterwards
+		" further redefine the search term, without skipping the next 2
+		" matching patterns!
+		let s:count   = v:count1
 		let orig_char = char
 		let char  = <sid>EscapePat(char, 1)
 		" ignore case of pattern? Does only work with search, not with original
@@ -361,7 +381,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 				if matches == 0
 					" no match within the windows viewport, abort
-					return s:escape
+					return <sid>DebugOutput(s:escape)
 				elseif matches == 1
 					break
 				endif
@@ -374,16 +394,16 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				endif
 				if !search(char, (a:fwd ? '' : 'b'). 'Wn')
 					" Pattern not found, abort
-					return s:escape
+					return <sid>DebugOutput(s:escape)
 				endif
 				" Get next character
 				let next = getchar()
 			endw
 			if nr2char(next) == s:escape
 				" abort when Escape has been hit
-				return s:escape
+				return <sid>DebugOutput(s:escape)
 			elseif empty(next) || next ==? "\x80\xFD\x60" "CursorHold Event"
-				return s:escape
+				return <sid>DebugOutput(s:escape)
 			endif
 		endif
 		let oldsearchpat = @/
@@ -398,7 +418,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				let cmd = (a:f ? 'f' : 't')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
 						\ pat, '', a:f, a:fwd)
-				return cmd.orig_char
+				return <sid>DebugOutput(cmd.orig_char)
 
 			elseif search(matchstr(pat.'\C', '^\%(\\c\)\?\zs.*'), 'bnW') == line('.')
 				\ && !a:fwd
@@ -406,7 +426,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 				let cmd = (a:f ? 'F' : 'T')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
 						\ pat, '', a:f, a:fwd)
-				return cmd.orig_char
+				return <sid>DebugOutput(cmd.orig_char)
 			endif
 		endif
 
@@ -416,7 +436,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 			" return ESC
 			call <sid>ColonPattern(<sid>SearchForChar(cmd),
 					\ pat, '', a:f, a:fwd)
-			return s:escape
+			return <sid>DebugOutput(s:escape)
 		endif
 
 		let cnt  = v:count1
@@ -481,22 +501,13 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		" command, else we would lose the repeatability using '.'
 		" (e.g. cf,foobar<esc> is not repeatable anymore)
 		if a:mode != 'o' && v:operator != 'c'
-		    if v:operator == 'c'
-			    let mode = "\<C-\>\<C-O>"
-		    else
-			    let mode = "\<C-\>\<C-N>"
-		    endif
-		    let post_cmd = (a:mode == 'o' ? mode : '').
-			    \ ":\<C-U>call histdel('/', -1)\<cr>".
-			    \ (a:mode == 'o' ? mode : '').
+		    let post_cmd =  ":\<C-U>call histdel('/', -1)\<cr>".
 			    \ ":\<C-U>let @/='". oldsearchpat. "'\<cr>"
 		endif
 
 		" For visual mode, the :Ex commands exit the visual selection, so need
 		" to reselect it
-		call <sid>DebugOutput(res.post_cmd. ((a:mode ==? 'x' && mode() !~ '[vV]') ? 'gv' : ''))
-		return res.post_cmd. (a:mode ==? 'x' ? 'gv' : '')
-		"return res. ":let @/='".oldsearchpat."'\n"
+		return <sid>DebugOutput(res.post_cmd. ((a:mode ==? 'x') ? 'gv' : ''))
 	finally 
 		call <sid>HighlightMatch('', a:fwd)
 	endtry
@@ -588,7 +599,7 @@ unlet s:cpo
 " Modeline {{{1
 " vim: ts=4 sts=4 fdm=marker com+=l\:\" fdl=0
 doc/ft_improved.txt	[[[1
-189
+195
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
@@ -703,6 +714,7 @@ To enable this, simply set this variable in your |.vimrc| >
     :let g:ft_improved_multichars = 1
 <
 As you type, the matching positions will be highlighted.
+(Set g:ft_improved_nohighlight = 1 if you don't want the highlighting).
 
 To disable either |unlet| that variable, or set it to zero.
 
@@ -738,6 +750,11 @@ third line of this document.
 
 ==============================================================================
 4. History                                              *improvedft-history*
+
+0.9: (unreleased) "{{{
+- do not mess up highlighting for |;| and |,| commands
+- make count work correctly with multi-highlight match, so that only the
+  count'th occurence gets highlighted.
 
 0.8: Mar 27, 2014 "{{{1
 - handle keys like <Enter>, <Tab> literally

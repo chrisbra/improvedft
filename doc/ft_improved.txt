@@ -149,6 +149,11 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
+0.9: (unreleased) "{{{
+- do not mess up highlighting for |;| and |,| commands
+- make count work correctly with multi-highlight match, so that only the
+  count'th occurence gets highlighted.
+
 0.8: Mar 27, 2014 "{{{1
 - handle keys like <Enter>, <Tab> literally
 - escape '/' correctly for |t| commands.
