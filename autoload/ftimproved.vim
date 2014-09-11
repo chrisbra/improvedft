@@ -119,11 +119,11 @@ fun! <sid>HighlightMatch(char, dir) "{{{1
 		" remove escaping for display
 		let output = substitute(output, '\\\\', '\\', 'g')
 		let pos    = [line('.'), col('.')]
-		let cnt = v:count1
 		if a:dir
-			while cnt > 1
+			while s:count > 1
+				" skip that many matches
 				let pos = searchpos(a:char, 'eW')
-				let cnt -= 1
+				let s:count -= 1
 			endw
 
 			let pat = '\%(\%>'. pos[1]. 'c\&\%'. pos[0]. 'l'
@@ -131,9 +131,9 @@ fun! <sid>HighlightMatch(char, dir) "{{{1
 			" Make sure, it only matches within the current viewport
 			let pat = '\%('. pat. '\m\)\ze\&\%<'.(line('w$')+1).'l'.a:char
 		else
-			while cnt > 1
+			while s:count > 1
 				let pos = searchpos(a:char, 'bW')
-				let cnt -= 1
+				let s:count -= 1
 			endw
 			let pat = '\%(\%<'. pos[1]. 'c\&\%'. pos[0]. 'l'
 			let pat .= '\|\%<'. pos[0]. 'l\)'. a:char
@@ -297,6 +297,10 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		elseif empty(char) || char ==? "\x80\xFD\x60" "CursorHoldEvent"
 			return <sid>DebugOutput(s:escape)
 		endif
+		" Use a script local var, so that you can use 3fi (and afterwards
+		" further redefine the search term, without skipping the next 2
+		" matching patterns!
+		let s:count   = v:count1
 		let orig_char = char
 		let char  = <sid>EscapePat(char, 1)
 		" ignore case of pattern? Does only work with search, not with original
