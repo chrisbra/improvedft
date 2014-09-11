@@ -131,8 +131,12 @@ fun! <sid>HighlightMatch(char, dir) "{{{1
 			" Make sure, it only matches within the current viewport
 			let pat = '\%('. pat. '\m\)\ze\&\%<'.(line('w$')+1).'l'.a:char
 		else
-			let pat = '\%(\%<'. col('.'). 'c\&\%'. line('.'). 'l'
-			let pat .= '\|\%<'. line('.'). 'l\)'. a:char
+			while cnt > 1
+				let pos = searchpos(a:char, 'bW')
+				let cnt -= 1
+			endw
+			let pat = '\%(\%<'. pos[1]. 'c\&\%'. pos[0]. 'l'
+			let pat .= '\|\%<'. pos[0]. 'l\)'. a:char
 			" Make sure, it only matches within the current viewport
 			let pat = '\%('. pat. '\m\)\ze\&\%>'.(line('w0')-1).'l'.a:char
 		endif
