@@ -451,9 +451,9 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		" If operator is c, don't switch to normal mode after the
 		" command, else we would lose the repeatability using '.'
 		" (e.g. cf,foobar<esc> is not repeatable anymore)
-		if a:mode != 'o' && v:operator != 'c'
-		    let post_cmd =  ":\<C-U>call histdel('/', -1)\<cr>".
-			    \ ":\<C-U>let @/='". oldsearchpat. "'\<cr>"
+		if a:mode != 'o' || (a:mode == 'o' && v:operator != 'c')
+		    let post_cmd = ":\<C-U>call histdel('/', -1)\<cr>".
+						 \ ":\<C-U>let @/='". oldsearchpat. "'\<cr>"
 		endif
 
 		" For visual mode, the :Ex commands exit the visual selection, so need
