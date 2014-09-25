@@ -165,6 +165,9 @@ third line of this document.
 - do not mess up highlighting for |;| and |,| commands
 - make count work correctly with multi-highlight match, so that only the
   count'th occurence gets highlighted.
+- allow to disable mappings selectively |improvedft-Mapping|
+  (issue https://github.com/chrisbra/improvedft/issues/4 reported by Maiko
+  Cezar, thanks!)
 
 0.8: Mar 27, 2014 "{{{1
 - handle keys like <Enter>, <Tab> literally
