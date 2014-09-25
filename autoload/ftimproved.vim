@@ -173,8 +173,17 @@ fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
 	return 0
 endfun
 
+fun! <sid>DoNotRemap(key) "{{{1
+	if a:key ==? ','
+		return get(g:, 'ft_improved_nomap_comma', 0)
+	elseif a:key ==? ';'
+		return get(g:, 'ft_improved_nomap_semicolon', 0)
+	else
+		return get(g:, 'ft_improved_nomap_'.a:key, 0)
+	endif
+endfu
 fun! <sid>Map(lhs, rhs) "{{{1
-	if !hasmapto(a:rhs, 'nxo')
+	if !hasmapto(a:rhs, 'nxo') && !<sid>DoNotRemap(a:lhs)
 		for mode in split('nxo', '\zs')
 			exe mode. "noremap <silent> <expr> <unique>" a:lhs
 					\ substitute(a:rhs, 'X', '"'.mode.'"', '')
