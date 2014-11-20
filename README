@@ -18,7 +18,8 @@ Copyright: (c) 2009-2013 by Christian Brabandt
         2.3   Tips.....................................: |improvedft-Tips|
         2.3.1 Using the YankRing.......................: |improvedft-YankRing|
         2.3.2 Ignoring case............................: |improvedft-ignorecase|
-        2.4   Bugs.....................................: |improvedft-Bugs|
+        2.4   Mapping..................................: |improvedft-Mapping|
+        2.5   Bugs.....................................: |improvedft-Bugs|
         3.  Feedback...................................: |improvedft-feedback|
         4.  History....................................: |improvedft-history|
 
@@ -112,6 +113,7 @@ To enable this, simply set this variable in your |.vimrc| >
     :let g:ft_improved_multichars = 1
 <
 As you type, the matching positions will be highlighted.
+(Set g:ft_improved_nohighlight = 1 if you don't want the highlighting).
 
 To disable either |unlet| that variable, or set it to zero.
 
@@ -124,7 +126,18 @@ will simply drop you there.
 Note: This is highly experimental and basically turns your |f| |F| |t| |T| |,|
 |;| keys to use a literal search function.
 
-2.4 Bugs                                             *improvedft-Bugs*
+2.4 Mapping                                             *improvedft-Mapping*
+-----------
+By default the keys |f| |F| |t| |T| |;| and |,| are mapped to a function that
+performs the work. If for one reason, you do not want any of those keys to be
+remapped, simply set the variable g:ft_improved_nomap_<key> to one where <key>
+corresponds to any of the above keys (but use "comma" for "," and semicolon
+for ";"). Say you do not want to have the ',' remapped, you would in your
+|.vimrc| set: >
+
+    :let g:ft_improved_nomap_comma = 1
+
+2.5 Bugs                                             *improvedft-Bugs*
 --------
 
 - When using T as operator and the match is the last character of a previous
@@ -147,6 +160,14 @@ third line of this document.
 
 ==============================================================================
 4. History                                              *improvedft-history*
+
+0.9: (unreleased) "{{{
+- do not mess up highlighting for |;| and |,| commands
+- make count work correctly with multi-highlight match, so that only the
+  count'th occurence gets highlighted.
+- allow to disable mappings selectively |improvedft-Mapping|
+  (issue https://github.com/chrisbra/improvedft/issues/4 reported by Maiko
+  Cezar, thanks!)
 
 0.8: Mar 27, 2014 "{{{1
 - handle keys like <Enter>, <Tab> literally

@@ -173,23 +173,6 @@ fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
 	return 0
 endfun
 
-fun! <sid>DoNotRemap(key) "{{{1
-	if a:key ==? ','
-		return get(g:, 'ft_improved_nomap_comma', 0)
-	elseif a:key ==? ';'
-		return get(g:, 'ft_improved_nomap_semicolon', 0)
-	else
-		return get(g:, 'ft_improved_nomap_'.a:key, 0)
-	endif
-endfu
-fun! <sid>Map(lhs, rhs) "{{{1
-	if !hasmapto(a:rhs, 'nxo') && !<sid>DoNotRemap(a:lhs)
-		for mode in split('nxo', '\zs')
-			exe mode. "noremap <silent> <expr> <unique>" a:lhs
-					\ substitute(a:rhs, 'X', '"'.mode.'"', '')
-		endfor
-	endif
-endfun
 
 fun! <sid>Unmap(lhs) "{{{1
 	"if hasmapto('ftimproved#FTCommand', 'nov')
@@ -473,85 +456,6 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 	endtry
 endfun
 
-fun! ftimproved#Activate(enable) "{{{1
-	if a:enable
-		" Disable the remapping of those keys by the yankring plugin
-		" and reload the Yankring plugin
-		" github issue #1
-		let g:yr_mapped = [0, 0]
-		if exists("g:loaded_yankring") &&
-			\ g:loaded_yankring > 1
-			" should make sure, the user didn't set this variable to simply
-			" deactivate the plugin. If so, he probably only set it to 1...
-			if exists(":YRToggle") == 2
-				" turn off and on again yankring
-				" first turn off with the original values of the variables,
-				" so everything is disabled correctly
-				sil YRToggle 0
-				" now adjust the Yankring options
-				if g:yankring_zap_keys =~# "[ft]"
-					let g:yankring_zap_keys =
-								\ substitute(g:yankring_zap_keys,
-								\ '\c[ft] ', "", "g")
-					let g:yr_mapped[0] = 1
-				endif
-				if g:yankring_o_keys =~ "[,;]"
-					let g:yankring_o_keys =
-								\ substitute(g:yankring_o_keys, '[,;] ',
-								\ "", "g")
-					let g:yr_mapped[1] = 1
-				endif
-				" enable the plugin again
-				sil YRToggle 1
-			endif
-		else
-			" YankRing wasn't loaded yet, so init those variables
-			let g:yankring_zap_keys = "/ ?"
-			let g:yankring_o_keys  = 'b B w W e E d h j k l H M L y G ^ 0 $'
-			let g:yankring_o_keys .= ' g_  g^ gm g$ gk gj gg ge gE - + _ '
-			let g:yankring_o_keys .= ' iw iW aw aW as is ap ip a] a[ i] i['
-			let g:yankring_o_keys .= ' a) a( ab i) i( ib a> a< i> i< at it'
-			let g:yankring_o_keys .= ' a} a{ aB i} i{ iB a" a'' a` i" i'' i`'
-		endif
-		" f,F,t,T should be unmaped now, so we can map it.
-		call <sid>Map('f', 'ftimproved#FTCommand(1,1,X)')
-		call <sid>Map('F', 'ftimproved#FTCommand(1,0,X)')
-		call <sid>Map('t', 'ftimproved#FTCommand(0,1,X)')
-		call <sid>Map('T', 'ftimproved#FTCommand(0,0,X)')
-		call <sid>Map(';', 'ftimproved#ColonCommand(1,X)')
-		call <sid>Map(',', 'ftimproved#ColonCommand(0,X)')
-	else
-		call <sid>Unmap('f')
-		call <sid>Unmap('F')
-		call <sid>Unmap('t')
-		call <sid>Unmap('T')
-		call <sid>Unmap(',')
-		call <sid>Unmap(';')
-		if exists("g:loaded_yankring") &&
-			\ g:loaded_yankring > 1
-			" should make sure, the user didn't set this variable to simply
-			" deactivate the plugin. If so, he probably only set it to 1...
-			if exists(":YRToggle") == 2
-				" turn off and on again yankring
-				sil YRToggle 0
-				" reset the yankring options
-				if g:yr_mapped[0]
-					let g:yankring_zap_keys .= 'f F t T '
-				else
-					unlet! g:yankring_zap_keys
-				endif
-				if g:yr_mapped[1]
-					let g:yankring_o_keys .= ', ; '
-				else
-					unlet! g:yankring_o_keys
-				endif
-
-				" enable Yankring, and reload the YankRing
-				sil YRToggle 1
-			endif
-		endif
-	endif
-endfun
 
 " Restore: "{{{1
 let &cpo=s:cpo
