@@ -130,8 +130,8 @@ endfun
 "noremap <sid>T_Cmd_fw ft_improved#FTCommand(0,1)
 "noremap <sid>T_Cmd_bw ft_improved#FTCommand(0,0)
 
-com! DisableImprovedFT :call ftimproved#Activate(0)
-com! EnableImprovedFT  :call ftimproved#Activate(1)
+com! DisableImprovedFT :call <sid>Activate(0)
+com! EnableImprovedFT  :call <sid>Activate(1)
 
 call <sid>Activate(1)
 
