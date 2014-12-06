@@ -2,7 +2,7 @@
 UseVimball
 finish
 plugin/ft_improved.vim	[[[1
-141
+148
 " ft_improved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.8
@@ -41,6 +41,13 @@ fun! <sid>Map(lhs, rhs) "{{{1
 			exe mode. "noremap <silent> <expr> <unique>" a:lhs
 					\ substitute(a:rhs, 'X', '"'.mode.'"', '')
 		endfor
+	endif
+endfun
+fun! <sid>Unmap(lhs) "{{{1
+	if !empty(maparg(a:lhs, 'nov'))
+		exe "nunmap" a:lhs
+		exe "xunmap" a:lhs
+		exe "ounmap" a:lhs
 	endif
 endfun
 fun! <sid>Activate(enable) "{{{1
@@ -135,8 +142,8 @@ endfun
 "noremap <sid>T_Cmd_fw ft_improved#FTCommand(0,1)
 "noremap <sid>T_Cmd_bw ft_improved#FTCommand(0,0)
 
-com! DisableImprovedFT :call ftimproved#Activate(0)
-com! EnableImprovedFT  :call ftimproved#Activate(1)
+com! DisableImprovedFT :call <sid>Activate(0)
+com! EnableImprovedFT  :call <sid>Activate(1)
 
 call <sid>Activate(1)
 
@@ -145,7 +152,7 @@ let &cpo=s:cpo
 unlet s:cpo
 " vim: ts=4 sts=4 fdm=marker com+=l\:\"
 autoload/ftimproved.vim	[[[1
-464
+458
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
 " Version:	   0.8
@@ -239,17 +246,10 @@ fun! <sid>ColonPattern(cmd, pat, off, f, fwd) "{{{1
 	elseif a:cmd == 'F'
 		let cmd = '?'
 	endif
-	if a:fwd
-		let s:colon[';'] = cmd[-1:]. pat. 
-			\ (empty(a:off) ? cmd[-1:] : a:off)
-		let s:colon[','] = cmd[:-2]. opp. pat.
-			\ (empty(a:off) ? opp : opp_off . a:off[1])
-	else
-		let s:colon[','] = cmd[-1:]. pat. 
-			\ (empty(a:off) ? cmd[-1:] : a:off)
-		let s:colon[';'] = cmd[:-2]. opp. pat.
-			\ (empty(a:off) ? opp : opp_off . a:off[1])
-	endif
+	let s:colon[';'] = cmd[-1:]. pat. 
+		\ (empty(a:off) ? cmd[-1:] : a:off)
+	let s:colon[','] = cmd[:-2]. opp. pat.
+		\ (empty(a:off) ? opp : opp_off . a:off[1])
 	let s:colon['cmd'] = a:f
 endfun
 
@@ -322,14 +322,6 @@ fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
 endfun
 
 
-fun! <sid>Unmap(lhs) "{{{1
-	"if hasmapto('ftimproved#FTCommand', 'nov')
-	if !empty(maparg(a:lhs, 'nov'))
-		exe "nunmap" a:lhs
-		exe "xunmap" a:lhs
-		exe "ounmap" a:lhs
-	endif
-endfun
 
 fun! <sid>CountMatchesWin(pat, forward) "{{{1
 	" Return number of matches of pattern window start and cursor (backwards)
@@ -379,6 +371,15 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	endif
 	let res = ''
 	let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
+
+	if get(g:, 'ft_improved_consistent_comma', 0)
+		let fcmd = (a:f ? ',' : ';')
+		if (a:f && res[0] !=? '/')
+			let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
+		elseif (!a:f && res[0] !=? '?')
+			let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
+		endif
+	endif
 	let oldsearchpat = @/
 	if a:mode =~ 'o' &&
 		\ s:colon['cmd'] " last search was 'f' command
@@ -611,7 +612,7 @@ unlet s:cpo
 " Modeline {{{1
 " vim: ts=4 sts=4 fdm=marker com+=l\:\" fdl=0
 doc/ft_improved.txt	[[[1
-210
+227
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
@@ -632,6 +633,8 @@ Copyright: (c) 2009-2013 by Christian Brabandt
         2.3   Tips.....................................: |improvedft-Tips|
         2.3.1 Using the YankRing.......................: |improvedft-YankRing|
         2.3.2 Ignoring case............................: |improvedft-ignorecase|
+        2.3.3 Searching for more chars.................: |improvedft-multichars|
+        2.3.4 Consistent ,/; keys......................: |improvedft-consistent_comma|
         2.4   Mapping..................................: |improvedft-Mapping|
         2.5   Bugs.....................................: |improvedft-Bugs|
         3.  Feedback...................................: |improvedft-feedback|
@@ -740,6 +743,19 @@ will simply drop you there.
 Note: This is highly experimental and basically turns your |f| |F| |t| |T| |,|
 |;| keys to use a literal search function.
 
+                                                    *improvedft-consistent_comma*
+2.3.4 Consistent ,/; keys
+-------------------------
+By default, the |,| will always search into the opposite direction of your
+last |f|/|F|/|t|/|T| command, while the ';' will always search in the same
+direciton.
+
+If you rather like to have that the |;| will always search forward and the |,|
+always backwards you can set the variable g:ft_improved_consistent_comma
+variable like this in your |.vimrc| >
+
+    :let g:ft_improved_consistent_comma = 1
+
 2.4 Mapping                                             *improvedft-Mapping*
 -----------
 By default the keys |f| |F| |t| |T| |;| and |,| are mapped to a function that
@@ -782,6 +798,8 @@ third line of this document.
 - allow to disable mappings selectively |improvedft-Mapping|
   (issue https://github.com/chrisbra/improvedft/issues/4 reported by Maiko
   Cezar, thanks!)
+- make the plugin not unneccessarily source the autoload script
+- document |improvedft-consistent_comma|
 
 0.8: Mar 27, 2014 "{{{1
 - handle keys like <Enter>, <Tab> literally
