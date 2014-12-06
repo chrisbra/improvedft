@@ -91,6 +91,9 @@ fun! <sid>ColonPattern(cmd, pat, off, f, fwd) "{{{1
 	elseif a:cmd == 'F'
 		let cmd = '?'
 	endif
+	if get(g:, 'ft_improved_consistent_comma', 0)
+		let cmd = a:fwd ? '/' : '?'
+	endif
 	if a:fwd
 		let s:colon[';'] = cmd[-1:]. pat. 
 			\ (empty(a:off) ? cmd[-1:] : a:off)

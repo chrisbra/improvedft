@@ -18,6 +18,8 @@ Copyright: (c) 2009-2013 by Christian Brabandt
         2.3   Tips.....................................: |improvedft-Tips|
         2.3.1 Using the YankRing.......................: |improvedft-YankRing|
         2.3.2 Ignoring case............................: |improvedft-ignorecase|
+        2.3.3 Searching for more chars.................: |improvedft-multichars|
+        2.3.4 Consistent ,/; keys......................: |improvedft-consistent_comma|
         2.4   Mapping..................................: |improvedft-Mapping|
         2.5   Bugs.....................................: |improvedft-Bugs|
         3.  Feedback...................................: |improvedft-feedback|
@@ -126,6 +128,19 @@ will simply drop you there.
 Note: This is highly experimental and basically turns your |f| |F| |t| |T| |,|
 |;| keys to use a literal search function.
 
+                                                    *improvedft-consistent_comma*
+2.3.4 Consistent ,/; keys
+-------------------------
+By default, the |,| will always search into the opposite direction of your
+last |f|/|F|/|t|/|T| command, while the ';' will always search in the same
+direciton.
+
+If you rather like to have that the |;| will always search forward and the |,|
+always backwards you can set the variable g:ft_improved_consistent_comma
+variable like this in your |.vimrc| >
+
+    :let g:ft_improved_consistent_comma = 1
+
 2.4 Mapping                                             *improvedft-Mapping*
 -----------
 By default the keys |f| |F| |t| |T| |;| and |,| are mapped to a function that
@@ -169,6 +184,7 @@ third line of this document.
   (issue https://github.com/chrisbra/improvedft/issues/4 reported by Maiko
   Cezar, thanks!)
 - make the plugin not unneccessarily source the autoload script
+- document |improvedft-consistent_comma|
 
 0.8: Mar 27, 2014 "{{{1
 - handle keys like <Enter>, <Tab> literally
