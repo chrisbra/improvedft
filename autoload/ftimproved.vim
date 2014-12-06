@@ -177,14 +177,6 @@ fun! <sid>CheckSearchWrap(pat, fwd, cnt) "{{{1
 endfun
 
 
-fun! <sid>Unmap(lhs) "{{{1
-	"if hasmapto('ftimproved#FTCommand', 'nov')
-	if !empty(maparg(a:lhs, 'nov'))
-		exe "nunmap" a:lhs
-		exe "xunmap" a:lhs
-		exe "ounmap" a:lhs
-	endif
-endfun
 
 fun! <sid>CountMatchesWin(pat, forward) "{{{1
 	" Return number of matches of pattern window start and cursor (backwards)

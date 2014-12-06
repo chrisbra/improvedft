@@ -38,6 +38,13 @@ fun! <sid>Map(lhs, rhs) "{{{1
 		endfor
 	endif
 endfun
+fun! <sid>Unmap(lhs) "{{{1
+	if !empty(maparg(a:lhs, 'nov'))
+		exe "nunmap" a:lhs
+		exe "xunmap" a:lhs
+		exe "ounmap" a:lhs
+	endif
+endfun
 fun! <sid>Activate(enable) "{{{1
 	if a:enable
 		" Disable the remapping of those keys by the yankring plugin
