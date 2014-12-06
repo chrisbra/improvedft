@@ -91,20 +91,10 @@ fun! <sid>ColonPattern(cmd, pat, off, f, fwd) "{{{1
 	elseif a:cmd == 'F'
 		let cmd = '?'
 	endif
-	if get(g:, 'ft_improved_consistent_comma', 0)
-		let cmd = a:fwd ? '/' : '?'
-	endif
-	if a:fwd
-		let s:colon[';'] = cmd[-1:]. pat. 
-			\ (empty(a:off) ? cmd[-1:] : a:off)
-		let s:colon[','] = cmd[:-2]. opp. pat.
-			\ (empty(a:off) ? opp : opp_off . a:off[1])
-	else
-		let s:colon[','] = cmd[-1:]. pat. 
-			\ (empty(a:off) ? cmd[-1:] : a:off)
-		let s:colon[';'] = cmd[:-2]. opp. pat.
-			\ (empty(a:off) ? opp : opp_off . a:off[1])
-	endif
+	let s:colon[';'] = cmd[-1:]. pat. 
+		\ (empty(a:off) ? cmd[-1:] : a:off)
+	let s:colon[','] = cmd[:-2]. opp. pat.
+		\ (empty(a:off) ? opp : opp_off . a:off[1])
 	let s:colon['cmd'] = a:f
 endfun
 
@@ -226,6 +216,15 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	endif
 	let res = ''
 	let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
+
+	if get(g:, 'ft_improved_consistent_comma', 0)
+		let fcmd = (a:f ? ',' : ';')
+		if (a:f && res[0] !=? '/')
+			let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
+		elseif (!a:f && res[0] !=? '?')
+			let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
+		endif
+	endif
 	let oldsearchpat = @/
 	if a:mode =~ 'o' &&
 		\ s:colon['cmd'] " last search was 'f' command
