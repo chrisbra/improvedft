@@ -5,9 +5,9 @@ plugin/ft_improved.vim	[[[1
 148
 " ft_improved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.8
+" Version:	   0.9
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Thu, 27 Mar 2014 23:22:01 +0100
+" Last Change: Thu, 15 Jan 2015 21:40:10 +0100
 "
 " Script: 
 " Copyright:   (c) 2009, 2010, 2011, 2012  by Christian Brabandt
@@ -16,7 +16,7 @@ plugin/ft_improved.vim	[[[1
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 8 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 9 :AutoInstall: ft_improved.vim
 "
 " Init: {{{1
 let s:cpo= &cpo
@@ -155,9 +155,9 @@ autoload/ftimproved.vim	[[[1
 458
 " ftimproved.vim - Better f/t command for Vim
 " -------------------------------------------------------------
-" Version:	   0.8
+" Version:	   0.9
 " Maintainer:  Christian Brabandt <cb@256bit.org>
-" Last Change: Thu, 27 Mar 2014 23:22:01 +0100
+" Last Change: Thu, 15 Jan 2015 21:40:10 +0100
 " Script:  http://www.vim.org/scripts/script.php?script_id=3877
 " Copyright:   (c) 2009 - 2013  by Christian Brabandt
 "			   The VIM LICENSE applies to ft_improved.vim 
@@ -165,7 +165,7 @@ autoload/ftimproved.vim	[[[1
 "			   instead of "Vim".
 "			   No warranty, express or implied.
 "	 *** ***   Use At-Your-Own-Risk!   *** ***
-" GetLatestVimScripts: 3877 8 :AutoInstall: ft_improved.vim
+" GetLatestVimScripts: 3877 9 :AutoInstall: ft_improved.vim
 "
 " Functions:
 let s:cpo= &cpo
@@ -616,7 +616,7 @@ doc/ft_improved.txt	[[[1
 *ft_improved.txt* - Better f/t command for Vim
 
 Author:  Christian Brabandt <cb@256bit.org>
-Version: 0.8 Thu, 27 Mar 2014 23:22:01 +0100
+Version: 0.9 Thu, 15 Jan 2015 21:40:10 +0100
 
 Copyright: (c) 2009-2013 by Christian Brabandt
            The VIM LICENSE applies to improved_ft.vim and improved_ft.txt
@@ -791,7 +791,7 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
-0.9: (unreleased) "{{{
+0.9: Jan 15, 2015 "{{{
 - do not mess up highlighting for |;| and |,| commands
 - make count work correctly with multi-highlight match, so that only the
   count'th occurence gets highlighted.
