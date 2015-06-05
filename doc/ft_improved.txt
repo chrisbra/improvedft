@@ -33,7 +33,8 @@ Functionality
 This plugin tries to improve the existing behaviour of the |f|, |F|, |t| and
 |T| command by letting them move the cursor not only inside the current line,
 but move to whatever line, where the character is found. Also the |,| and |;|
-command should just work as expected.
+command should consistently by default, but can be enabled to work as usual
+(see |improvedft-consistent_comma|).
 
 It does consider counts given and should work simply as a user would be
 expecting.
@@ -176,6 +177,9 @@ third line of this document.
 ==============================================================================
 4. History                                              *improvedft-history*
 
+0.10: (unreleased) "{{{
+- Make |,| and |;| work as documented (reported by JonnyRa in
+  https://github.com/chrisbra/improvedft/issues/5, thanks!)
 0.9: Jan 15, 2015 "{{{
 - do not mess up highlighting for |;| and |,| commands
 - make count work correctly with multi-highlight match, so that only the

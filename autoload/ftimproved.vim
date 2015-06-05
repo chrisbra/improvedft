@@ -82,13 +82,13 @@ fun! <sid>ColonPattern(cmd, pat, off, f, fwd) "{{{1
 	if !exists("s:colon")
 		let s:colon = {}
 	endif
-	let pat = a:pat
 	let cmd = a:cmd
+	let pat = a:pat
 	let opp = <sid>Opposite(a:cmd[-1:])
 	let opp_off = <sid>Opposite(a:off[0])
-	if a:cmd == 'f'
+	if a:cmd ==# 'f' || a:cmd ==# 't'
 		let cmd = '/'
-	elseif a:cmd == 'F'
+	elseif a:cmd == 'F' || a:cmd ==# 'T'
 		let cmd = '?'
 	endif
 	let s:colon[';'] = cmd[-1:]. pat. 
@@ -203,11 +203,7 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	if !exists("s:searchforward")
 	    let s:searchforward = 1
 	endif
-	if s:searchforward
-	    let fcmd = (a:f ? ';' : ',')
-	else
-	    let fcmd = (!a:f ? ';' : ',')
-	endif
+	let fcmd = (a:f ? ';' : ',')
 	if !exists("s:colon")
 		let s:colon={}
 		let s:colon[';']=''
@@ -218,13 +214,13 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 	let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
 
 	if get(g:, 'ft_improved_consistent_comma', 0)
-		let fcmd = (a:f ? ',' : ';')
-		if (a:f && res[0] !=? '/')
-			let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
-		elseif (!a:f && res[0] !=? '?')
-			let res = (empty(s:colon[fcmd]) ? fcmd : s:colon[fcmd])
+		if a:f
+			let res = '/'.res[1:-2]. '/'
+		else
+			let res = '?'.res[1:-2]. '?'
 		endif
 	endif
+
 	let oldsearchpat = @/
 	if a:mode =~ 'o' &&
 		\ s:colon['cmd'] " last search was 'f' command
@@ -238,7 +234,7 @@ fun! ftimproved#ColonCommand(f, mode) "{{{1
 			let spat = pat[2]
 			if pat[1] =~ '[?/]'
 				let pat[2] = escape(pat[2], pat[1])
-				if !s:colon['cmd'] && pat[1] == '?' " t or T command
+				if !s:colon['cmd'] && pat[1] == '?'
 					" T command
 					let res = pat[1]. '\('. pat[2]. '\m\)\@<=.' . pat[1]
 				elseif !s:colon['cmd']
@@ -279,6 +275,7 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 	" fwd: forward motion
 	" mode: mapping mode
 	try
+		let s:searchforward = a:fwd
 		let char = nr2char(getchar())
 		if  char == s:escape
 			" abort when Escape has been hit
@@ -351,7 +348,6 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		" Check if normal f/t commands would work:
 			if search(matchstr(pat.'\C', '^\%(\\c\)\?\zs.*'), 'nW') == line('.')
 				\ && a:fwd
-				let s:searchforward = 1
 				let cmd = (a:f ? 'f' : 't')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
 						\ pat, '', a:f, a:fwd)
@@ -359,7 +355,6 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 
 			elseif search(matchstr(pat.'\C', '^\%(\\c\)\?\zs.*'), 'bnW') == line('.')
 				\ && !a:fwd
-				let s:searchforward = 0
 				let cmd = (a:f ? 'F' : 'T')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
 						\ pat, '', a:f, a:fwd)
