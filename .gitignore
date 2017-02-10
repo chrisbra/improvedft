@@ -7,3 +7,4 @@ vim_passfile
 # ignore *.orig files
 *.orig
 *.vmb
+!improvedft.vmb
