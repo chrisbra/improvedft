@@ -65,7 +65,7 @@ fun! <sid>SearchForChar(char) "{{{1
 endfun
 
 fun! <sid>EscapePat(pat, vmagic) "{{{1
-	let pat = escape(a:pat, '\''')
+	let pat = escape(a:pat, '\')
 	if pat ==# ''
 		let pat = '\r'
 	elseif pat ==# '	'
