@@ -180,7 +180,6 @@ third line of this document.
 0.10: (unreleased) "{{{
 - Make |,| and |;| work as documented (reported by JonnyRa in
   https://github.com/chrisbra/improvedft/issues/5, thanks!)
-- Do not escape single apostrophs
 0.9: Jan 15, 2015 "{{{
 - do not mess up highlighting for |;| and |,| commands
 - make count work correctly with multi-highlight match, so that only the
