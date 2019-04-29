@@ -21,7 +21,10 @@ endif
 set cpo&vim
 let g:loaded_ft_improved = 1
 
-fun! <sid>DoNotRemap(key) "{{{1
+fun! <sid>DoNotRemap(key, mode) "{{{1
+    if !empty(maparg(a:key, a:mode, 0))
+        return 1
+    endif
 	if a:key ==? ','
 		return get(g:, 'ft_improved_nomap_comma', 0)
 	elseif a:key ==? ';'
@@ -31,12 +34,13 @@ fun! <sid>DoNotRemap(key) "{{{1
 	endif
 endfu
 fun! <sid>Map(lhs, rhs) "{{{1
-	if !hasmapto(a:rhs, 'nxo') && !<sid>DoNotRemap(a:lhs)
-		for mode in split('nxo', '\zs')
-			exe mode. "noremap <silent> <expr> <unique>" a:lhs
-					\ substitute(a:rhs, 'X', '"'.mode.'"', '')
-		endfor
-	endif
+    for mode in split('nxo', '\zs')
+        if hasmapto(a:rhs, mode) || <sid>DoNotRemap(a:lhs, mode)
+            continue
+        endif
+        exe mode. "noremap <silent> <expr> <unique>" a:lhs
+                \ substitute(a:rhs, 'X', '"'.mode.'"', '')
+    endfor
 endfun
 fun! <sid>Unmap(lhs) "{{{1
 	if !empty(maparg(a:lhs, 'nov'))
