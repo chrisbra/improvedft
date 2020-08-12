@@ -344,16 +344,15 @@ fun! ftimproved#FTCommand(f, fwd, mode) "{{{1
 		let no_offset = 0
 		let cmd = (a:fwd ? '/' : '?')
 		let pat = char
-		if !get(g:, "ft_improved_multichars", 0)
-		" Check if normal f/t commands would work:
-			if search(matchstr(pat.'\C', '^\%(\\c\)\?\zs.*'), 'nW') == line('.')
+		if !get(g:, "ft_improved_multichars", 0) && !get(g:, "ft_improved_ignorecase", 0)
+			" Check if normal f/t commands would work:
+			if search(matchstr(pat.'\C', '.*'), 'nW') == line('.')
 				\ && a:fwd
 				let cmd = (a:f ? 'f' : 't')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
 						\ pat, '', a:f, a:fwd)
 				return <sid>DebugOutput(cmd.orig_char)
-
-			elseif search(matchstr(pat.'\C', '^\%(\\c\)\?\zs.*'), 'bnW') == line('.')
+			elseif search(matchstr(pat.'\C', '.*'), 'bnW') == line('.')
 				\ && !a:fwd
 				let cmd = (a:f ? 'F' : 'T')
 				call <sid>ColonPattern(<sid>SearchForChar(cmd),
